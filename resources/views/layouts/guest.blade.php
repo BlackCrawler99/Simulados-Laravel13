@@ -18,7 +18,8 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div>
                 <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                    <!-- Tiramos a largura fixa e colocamos um h-32 (128px) ou h-40 (160px) para logos verticais -->
+                    <x-application-logo class="h-32 w-auto" />
                 </a>
             </div>
 

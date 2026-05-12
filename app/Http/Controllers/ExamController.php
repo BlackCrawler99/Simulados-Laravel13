@@ -33,7 +33,7 @@ class ExamController extends Controller
     // 2. Carrega as questões e exibe a tela da prova
     public function show(Exam $exam)
     {
-        if ($exam->user_id !== auth()->id()) {
+        if ($exam->user_id != auth()->id()) {
             abort(403, 'Acesso não autorizado.');
         }
 

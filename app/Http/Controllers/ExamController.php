@@ -141,7 +141,7 @@ class ExamController extends Controller
         $exam = \App\Models\Exam::with(['answers.question.options'])->findOrFail($id);
 
         // Trava de segurança: o aluno logado só pode ver o PRÓPRIO simulado
-        if ($exam->user_id !== auth()->id()) {
+        if ($exam->user_id != auth()->id()) {
             abort(403, 'Você não tem permissão para visualizar este simulado.');
         }
 

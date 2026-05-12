@@ -51,7 +51,7 @@ class ExamController extends Controller
     // 3. Recebe o formulário, corrige a prova e dá a nota
     public function submit(Request $request, Exam $exam)
     {
-        if ($exam->user_id !== auth()->id()) {
+        if ($exam->user_id != auth()->id()) {
             abort(403);
         }
 
@@ -92,13 +92,12 @@ class ExamController extends Controller
     public function downloadPdf(Exam $exam)
     {
         // Trava: verifica se o exame pertence ao aluno E se já foi finalizado
-        if ($exam->user_id !== auth()->id() || $exam->completed_at === null) {
+        if ($exam->user_id != auth()->id() || $exam->completed_at == null) {
             abort(403, 'Acesso negado ou simulado incompleto.');
         }
 
         // Carrega as respostas do aluno, trazendo junto as informações da questão e da alternativa
-        $exam->load('user', 'answers.question', 'answers.option');
-
+        $exam->load('user', 'answers.question.options', 'answers.option');
         // Gera o PDF apontando para uma view que vamos criar
         $pdf = Pdf::loadView('exams.pdf', compact('exam'));
         

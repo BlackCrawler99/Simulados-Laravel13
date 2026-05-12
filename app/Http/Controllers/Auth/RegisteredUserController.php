@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Course;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +21,10 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        // Busca os cursos em ordem alfabética para o Select
+        $courses = Course::orderBy('name')->get();
+        
+        return view('auth.register', compact('courses'));
     }
 
     /**
@@ -33,15 +37,24 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'phone' => ['required', 'string', 'max:20'], // Validação adicionada
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'phone' => ['required', 'string', 'max:20'],
+            'city' => ['required', 'string', 'max:100'],
+            'uf' => ['required', 'string', 'size:2'],
+            'desired_course' => ['required', 'string', 'max:100'],
+            'school_year' => ['required', 'string', 'max:50'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'phone' => $request->phone, // Salva o telefone no banco
             'password' => Hash::make($request->password),
+            'phone' => $request->phone,
+            'city' => $request->city,
+            'uf' => strtoupper($request->uf),
+            'desired_course' => $request->desired_course,
+            'school_year' => $request->school_year,
+            'accepts_info' => $request->has('accepts_info'),
         ]);
 
         event(new Registered($user));

@@ -17,21 +17,96 @@
             @endif
 
             {{-- Área de Ação Principal --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
-                <div class="p-8 flex flex-col md:flex-row items-center justify-between">
-                    <div>
-                        <h3 class="text-2xl font-bold text-gray-800">Pronto para testar seus conhecimentos?</h3>
-                        <p class="text-gray-600 mt-2">Inicie um novo simulado com questões aleatórias e prepare-se para o ENEM.</p>
+            @if($exams->whereNotNull('completed_at')->isEmpty())
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
+                    <div class="p-8 flex flex-col md:flex-row items-center justify-between">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800">Pronto para testar seus conhecimentos?</h3>
+                            <p class="text-gray-600 mt-2">Inicie seu simulado com questões aleatórias e prepare-se para o ENEM.</p>
+                        </div>
+                        <form method="POST" action="{{ route('exams.start') }}" class="mt-4 md:mt-0">
+                            @csrf
+                            <button type="submit" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow hover:bg-indigo-700 transition-colors">
+                                Iniciar Simulado
+                            </button>
+                        </form>
                     </div>
-                    <form method="POST" action="{{ route('exams.start') }}" class="mt-4 md:mt-0">
-                        @csrf
-                        <button type="submit" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow hover:bg-indigo-700 transition-colors">
-                            Iniciar Novo Simulado
-                        </button>
-                    </form>
                 </div>
-            </div>
+            @endif
 
+            {{-- Lógica de Premiação baseada na Melhor Nota --}}
+            @php
+                /* (Pega a maior nota entre várias tentativas):
+                    $bestExam = $exams->whereNotNull('score')->sortByDesc('score')->first();
+                */
+                    /*(Pega a nota da primeira tentativa): */
+                $bestExam = $exams->whereNotNull('score')->first();
+                $discount = 0;
+                $gift = '';
+                $score100 = 0;
+
+                if ($bestExam) {
+                    $score100 = $bestExam->score * 10; // Converte nota 10 para 100
+                    
+                    if ($score100 <= 30) {
+                        $discount = 30; $gift = '1 Figurinha';
+                    } elseif ($score100 <= 40) {
+                        $discount = 35; $gift = '2 Figurinhas';
+                    } elseif ($score100 <= 50) {
+                        $discount = 40; $gift = '3 Figurinhas';
+                    } elseif ($score100 <= 60) {
+                        $discount = 45; $gift = '4 Figurinhas';
+                    } elseif ($score100 <= 99) {
+                        $discount = 50; $gift = '5 Figurinhas';
+                    } else {
+                        // Nota 100
+                        $discount = 60; $gift = '1 Pacote de Figurinhas';
+                    }
+                }
+            @endphp
+
+            {{-- Exibe o Banner de Premiação APENAS se ele já fez algum simulado --}}
+            @if($bestExam)
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg border border-transparent overflow-hidden mb-8 text-white">
+                    <div class="p-8 flex flex-col md:flex-row items-center justify-between">
+                        
+                        <div class="flex items-center gap-6 mb-4 md:mb-0">
+                            <!-- Círculo com a Pontuação -->
+                            <div class="flex-shrink-0 w-24 h-24 bg-white rounded-full flex flex-col items-center justify-center text-indigo-600 shadow-inner">
+                                <span class="text-xs font-bold uppercase tracking-wide">Sua Nota</span>
+                                <span class="text-3xl font-extrabold">{{ $score100 }}</span>
+                            </div>
+                            
+                            <!-- Texto do Prêmio -->
+                            <div>
+                                <h3 class="text-2xl font-bold mb-1">Parabéns, {{ explode(' ', Auth::user()->name)[0] }}! 🎉</h3>
+                                <p class="text-indigo-100 text-lg">Com base no seu melhor desempenho, você garantiu:</p>
+                                <ul class="mt-2 space-y-1 font-semibold text-xl">
+                                    <li class="flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                        Bolsa de {{ $discount }}% de Desconto
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                        {{ $gift }} Exclusivas
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Botão do WhatsApp -->
+                        @php
+                            $waMessage = urlencode("Olá! Fiz o Simulado ENEM da UniEnsino, tirei a nota {$score100} e garanti minha bolsa de {$discount}% e {$gift}. Gostaria de agendar a retirada e minha matrícula!");
+                            $waNumber = "5541998131679"; 
+                        @endphp
+                        
+                        <a href="https://wa.me/{{ $waNumber }}?text={{ $waMessage }}" target="_blank" class="px-8 py-4 bg-green-500 text-white font-bold rounded-full shadow-lg hover:bg-green-400 hover:scale-105 transition-all flex items-center gap-2 text-lg whitespace-nowrap">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-5.824 4.74-10.563 10.581-10.563 5.824 0 10.563 4.74 10.564 10.563 0 5.824-4.74 10.563-10.563 10.563z"/></svg>
+                            Agendar Retirada
+                        </a>
+                    </div>
+                </div>
+            @endif
             {{-- Histórico de Avaliações em Cards --}}
             <h3 class="text-xl font-bold text-gray-800 mb-4">Meu Histórico de Avaliações</h3>
             
@@ -67,7 +142,7 @@
                             <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex gap-2">
                                 @if($exam->score !== null)
                                     {{-- Botões para Provas Concluídas --}}
-                                    <a href="#" class="flex-1 text-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
+                                    <a href="{{ route('exams.result', $exam->id) }}" class="flex-1 text-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
                                         Rever
                                     </a>
                                     {{-- Já inserindo a rota do PDF que criaremos no Passo 4 --}}

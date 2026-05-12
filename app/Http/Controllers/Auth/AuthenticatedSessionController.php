@@ -28,13 +28,14 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-       // Após o login, verifica se o usuário é administrador
-        if ($request->user()->is_admin) {
-            return redirect()->route('admin.candidates.index');
+        // Verifica se é administrador
+        if (auth()->user()->is_admin) {
+            // MUDE AQUI: De route('admin.candidates.index') para route('admin.dashboard')
+            return redirect()->intended(route('admin.dashboard'));
         }
 
-        // Se for um usuário normal (candidato), joga para a dashboard do simulado
-        return redirect()->route('dashboard');
+        // Se for aluno comum, vai pro painel do aluno
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**

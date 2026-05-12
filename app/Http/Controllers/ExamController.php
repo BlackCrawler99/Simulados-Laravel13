@@ -13,6 +13,10 @@ class ExamController extends Controller
     // 1. Cria o registro do simulado e redireciona para a prova
     public function start()
     {
+        /* 
+        // =====================================================================
+        // LÓGICA ANTIGA (MÚLTIPLAS TENTATIVAS) - Guardado para uso futuro
+        // =====================================================================
         // Verifica se o usuário já tem um simulado não finalizado
         $pendingExam = auth()->user()->exams()->whereNull('completed_at')->first();
 
@@ -23,6 +27,31 @@ class ExamController extends Controller
         }
 
         // Se não tiver, cria um novo normalmente
+        $exam = auth()->user()->exams()->create([
+            'score' => null,
+        ]);
+
+        return redirect()->route('exams.show', $exam->id);
+        */
+        // =====================================================================
+        // LÓGICA ATUAL (TENTATIVA ÚNICA)
+        // =====================================================================
+        // Verifica se o aluno já tem algum simulado no banco (concluído ou não)
+        $existingExam = auth()->user()->exams()->first();
+
+        if ($existingExam) {
+            // Se já tem nota/terminou, bloqueia e manda de volta pra dashboard
+            if ($existingExam->completed_at !== null) {
+                return redirect()->route('dashboard')
+                                 ->with('status', 'Você já realizou o seu simulado. Apenas uma tentativa é permitida!');
+            }
+            
+            // Se não terminou (fechou a aba sem querer), obriga a voltar pra prova
+            return redirect()->route('exams.show', $existingExam->id)
+                             ->with('status', 'Você tem um simulado em andamento. Termine-o para ver sua nota!');
+        }
+
+        // Se não tem nenhum registro, cria o primeiro e único simulado
         $exam = auth()->user()->exams()->create([
             'score' => null,
         ]);
@@ -103,6 +132,28 @@ class ExamController extends Controller
         
         // Retorna o arquivo para download
         return $pdf->download("resultado-simulado-{$exam->id}.pdf");
+    }
+
+    public function result($id)
+    {
+        // Busca o simulado e já carrega as respostas, as questões e as alternativas
+        // Adapte os nomes 'answers', 'question' e 'option' para os nomes reais dos seus relacionamentos, se forem diferentes
+        $exam = \App\Models\Exam::with(['answers.question.options'])->findOrFail($id);
+
+        // Trava de segurança: o aluno logado só pode ver o PRÓPRIO simulado
+        if ($exam->user_id !== auth()->id()) {
+            abort(403, 'Você não tem permissão para visualizar este simulado.');
+        }
+
+        // Calcula a pontuação dinamicamente (ou você pode puxar direto se já tiver uma coluna 'score' no seu BD)
+        $totalQuestions = $exam->answers->count();
+        $correctAnswers = $exam->answers->filter(function ($answer) {
+            // Verifica se a opção que o aluno marcou é a correta
+            $selectedOption = $answer->question->options->where('id', $answer->option_id)->first();
+            return $selectedOption && $selectedOption->is_correct;
+        })->count();
+
+        return view('exams.result', compact('exam', 'totalQuestions', 'correctAnswers'));
     }
 
 }

@@ -5,8 +5,20 @@ use App\Http\Controllers\Admin\CandidateController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    // Tenta buscar o tema no banco. Se falhar (banco vazio ou sem a tabela), usa o 'default'
+    try {
+        $theme = \App\Models\Setting::where('key', 'active_theme')->value('value') ?? 'default';
+    } catch (\Exception $e) {
+        $theme = 'default';
+    }
+
+    // Se o tema escolhido não existir na pasta, volta por segurança para o padrão
+    if (!view()->exists("themes.{$theme}")) {
+        $theme = 'default';
+    }
+
+    return view("themes.{$theme}");
+})->name('welcome');
 
 Route::get('/dashboard', function () {
     // Busca todos os simulados do usuário logado, do mais recente para o mais antigo
@@ -66,6 +78,10 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
     Route::put('/usuarios/{user}', [App\Http\Controllers\Admin\UserController::class, 'update'])->name('admin.users.update');
     Route::patch('/usuarios/{user}/toggle-admin', [App\Http\Controllers\Admin\UserController::class, 'toggleAdmin'])->name('admin.users.toggle-admin');
     Route::delete('/usuarios/{user}', [App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
+
+    // Configurações do Sistema
+    Route::get('/configuracoes', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
+    Route::post('/configuracoes/tema', [App\Http\Controllers\Admin\SettingController::class, 'updateTheme'])->name('admin.settings.update-theme');
 });
 
 require __DIR__.'/auth.php';

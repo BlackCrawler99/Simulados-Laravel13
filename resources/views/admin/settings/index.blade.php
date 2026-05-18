@@ -9,6 +9,24 @@
 </div>
 
 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 max-w-4xl">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-8">
+    <h3 class="text-lg font-bold text-gray-800 mb-4">Regras do Simulado</h3>
+    
+    <form action="{{ route('admin.settings.update-rules') }}" method="POST">
+        @csrf
+        <div class="max-w-xs">
+            <label class="block text-sm font-bold text-gray-700 mb-1">Total de Questões por Prova</label>
+            <input type="number" name="exam_question_count" 
+                   value="{{ \App\Models\Setting::where('key', 'exam_question_count')->value('value') ?? 20 }}" 
+                   class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <p class="text-xs text-gray-500 mt-2">Alterar este valor não afetará a nota das provas já finalizadas.</p>
+        </div>
+
+        <button type="submit" class="mt-4 px-4 py-2 bg-gray-900 text-white font-bold rounded-lg hover:bg-gray-800">
+            Salvar Regra
+        </button>
+    </form>
+</div>
     <h3 class="text-xl font-bold text-gray-800 mb-6">Tema da Página Inicial (Landing Page)</h3>
     
     <form action="{{ route('admin.settings.update-theme') }}" method="POST">

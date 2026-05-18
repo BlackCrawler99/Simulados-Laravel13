@@ -84,6 +84,7 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
     // Configurações do Sistema
     Route::get('/configuracoes', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
     Route::post('/configuracoes/tema', [App\Http\Controllers\Admin\SettingController::class, 'updateTheme'])->name('admin.settings.update-theme');
+    Route::post('/configuracoes/regras', [App\Http\Controllers\Admin\SettingController::class, 'updateRules'])->name('admin.settings.update-rules');
 });
 
 require __DIR__.'/auth.php';

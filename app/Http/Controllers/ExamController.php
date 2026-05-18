@@ -13,8 +13,7 @@ class ExamController extends Controller
     // 1. Cria o registro do simulado e redireciona para a prova
     public function start()
     {
-        /* 
-        // =====================================================================
+        /* // =====================================================================
         // LÓGICA ANTIGA (MÚLTIPLAS TENTATIVAS) - Guardado para uso futuro
         // =====================================================================
         // Verifica se o usuário já tem um simulado não finalizado
@@ -26,13 +25,32 @@ class ExamController extends Controller
                              ->with('status', 'Você tem um simulado em andamento. Termine-o primeiro!');
         }
 
-        // Se não tiver, cria um novo normalmente
+        // Pega o número de questões configurado no painel admin
+        $limit = \App\Models\Setting::where('key', 'exam_question_count')->value('value') ?? 20;
+
+        $questions = \App\Models\Question::inRandomOrder()->take($limit)->get();
+        if ($questions->isEmpty()) {
+            return back()->with('status', 'O banco de questões está vazio no momento.');
+        }
+
+        // Se não tiver, cria um novo salvando o total de questões configurado
         $exam = auth()->user()->exams()->create([
+            'total_questions' => $limit,
             'score' => null,
+            'completed_at' => null,
         ]);
+
+        // Sorteia e grampeia as questões na prova (F5 Seguro)
+        foreach ($questions as $question) {
+            $exam->answers()->create([
+                'question_id' => $question->id,
+                'option_id'   => null,
+            ]);
+        }
 
         return redirect()->route('exams.show', $exam->id);
         */
+
         // =====================================================================
         // LÓGICA ATUAL (TENTATIVA ÚNICA)
         // =====================================================================
@@ -46,15 +64,37 @@ class ExamController extends Controller
                                  ->with('status', 'Você já realizou o seu simulado. Apenas uma tentativa é permitida!');
             }
             
-            // Se não terminou (fechou a aba sem querer), obriga a voltar pra prova
+            // Se não terminou (fechou a aba sem querer), obriga a voltar pra prova antiga
+            // Nota: Como as questões já foram salvas na primeira vez, o F5 aqui está 100% protegido
             return redirect()->route('exams.show', $existingExam->id)
                              ->with('status', 'Você tem um simulado em andamento. Termine-o para ver sua nota!');
         }
 
-        // Se não tem nenhum registro, cria o primeiro e único simulado
+        // 1. Pega o limite de questões dinâmico do painel administrativo (Se não achar, usa 20)
+        $limit = \App\Models\Setting::where('key', 'exam_question_count')->value('value') ?? 20;
+
+        // 2. Busca as questões em ordem aleatória baseando-se no limite configurado
+        $questions = \App\Models\Question::inRandomOrder()->take($limit)->get();
+
+        // 3. Trava de segurança pedagógica: Evita criar uma prova vazia se o banco estiver zerado
+        if ($questions->isEmpty()) {
+            return back()->with('status', 'Opa! O simulado está sendo preparado. O banco de questões está vazio no momento.');
+        }
+
+        // 4. Se passou pelas validações, cria o primeiro e único registro de simulado do aluno
         $exam = auth()->user()->exams()->create([
-            'score' => null,
+            'total_questions' => $limit, // Congela a quantidade de questões desta tentativa aqui
+            'score'           => null,
+            'completed_at'    => null,
         ]);
+
+        // 5. Vincula imediatamente as questões sorteadas gerando as respostas em branco no banco
+        foreach ($questions as $question) {
+            $exam->answers()->create([
+                'question_id' => $question->id,
+                'option_id'   => null, // Começa em branco esperando o clique do aluno
+            ]);
+        }
 
         return redirect()->route('exams.show', $exam->id);
     }
@@ -80,17 +120,15 @@ class ExamController extends Controller
     // 3. Recebe o formulário, corrige a prova e dá a nota
     public function submit(Request $request, Exam $exam)
     {
-        if ($exam->user_id != auth()->id()) {
-            abort(403);
-        }
+        if ($exam->user_id != auth()->id()) abort(403);
 
-        // Vem do formulário no formato: ['id_da_questao' => 'id_da_alternativa']
         $userAnswers = $request->input('answers', []); 
         $correctCount = 0;
-        $totalQuestions = 5;
+        
+        // RECUPERA O TOTAL CONGELADO (A mágica que protege o histórico acontece aqui)
+        $totalQuestions = $exam->total_questions;
 
         foreach ($userAnswers as $questionId => $optionId) {
-            // Busca a alternativa escolhida para ver se é a certa
             $option = Option::find($optionId);
             $isCorrect = $option ? $option->is_correct : false;
 
@@ -98,24 +136,23 @@ class ExamController extends Controller
                 $correctCount++;
             }
 
-            // Salva a resposta no banco para o aluno poder revisar depois
-            $exam->answers()->create([
-                'question_id' => $questionId,
-                'option_id'   => $optionId,
-                'is_correct'  => $isCorrect,
+            // ATUALIZA a resposta que já existia em branco
+            $exam->answers()->where('question_id', $questionId)->update([
+                'option_id'  => $optionId,
+                'is_correct' => $isCorrect,
             ]);
         }
 
-        // Calcula a nota (ex: acertou 3 de 5 = nota 6)
-        $score = ($correctCount / $totalQuestions) * 10;
+        // Calcula a nota de forma dinâmica usando o total histórico daquela prova
+        // Usamos max(1, $total) para evitar erro de divisão por zero caso o admin coloque 0 lá na configuração
+        $score = ($correctCount / max(1, $totalQuestions)) * 10;
         
         $exam->update([
             'score' => $score,
             'completed_at' => now(),
         ]);
 
-        // Manda de volta pro painel do aluno com a nota
-        return redirect()->route('dashboard')->with('status', "Simulado finalizado! Sua nota foi: {$score}");
+        return redirect()->route('dashboard')->with('status', "Simulado finalizado! Sua nota foi: " . number_format($score, 1, ',', ''));
     }
 
     public function downloadPdf(Exam $exam)

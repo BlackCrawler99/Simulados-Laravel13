@@ -25,4 +25,20 @@ class SettingController extends Controller
 
         return back()->with('status', 'Tema da página inicial atualizado com sucesso!');
     }
+
+    public function updateRules(\Illuminate\Http\Request $request)
+    {
+        // Valida se o professor digitou um número válido (entre 1 e 200 questões)
+        $request->validate([
+            'exam_question_count' => 'required|integer|min:1|max:200',
+        ]);
+
+        // Cria a configuração ou atualiza se ela já existir
+        \App\Models\Setting::updateOrCreate(
+            ['key' => 'exam_question_count'],
+            ['value' => $request->exam_question_count]
+        );
+
+        return back()->with('status', 'Regras do simulado atualizadas com sucesso!');
+    }
 }

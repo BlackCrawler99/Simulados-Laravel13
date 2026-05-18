@@ -40,6 +40,33 @@
                     </div>
                 </div>
             </label>
+<!--  EXCLUSIVO PARA FUTURAS EDIÇÕES - OPÇÕES DE TEMAS SAZONAIS
+            Opção Tema Halloween 
+            <label class="cursor-pointer relative">
+                <input type="radio" name="theme" value="halloween" class="peer sr-only" {{ $activeTheme === 'halloween' ? 'checked' : '' }}>
+                <div class="rounded-lg border-2 p-6 transition-all {{ $activeTheme === 'halloween' ? 'border-orange-500 bg-orange-50' : 'border-gray-200 hover:border-orange-300' }} peer-checked:border-orange-500 peer-checked:bg-orange-50">
+                    <h4 class="text-lg font-bold text-gray-900 mb-2">Tema Halloween 🎃</h4>
+                    <p class="text-sm text-gray-600">Layout sombrio e divertido em tons de laranja e roxo para o mês das bruxas.</p>
+                    
+                    <div class="absolute top-4 right-4 hidden peer-checked:block text-orange-500">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    </div>
+                </div>
+            </label>
+
+            Opção Tema Natal 
+            <label class="cursor-pointer relative">
+                <input type="radio" name="theme" value="natal" class="peer sr-only" {{ $activeTheme === 'natal' ? 'checked' : '' }}>
+                <div class="rounded-lg border-2 p-6 transition-all {{ $activeTheme === 'natal' ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-red-300' }} peer-checked:border-red-500 peer-checked:bg-red-50">
+                    <h4 class="text-lg font-bold text-gray-900 mb-2">Tema Natal 🎄</h4>
+                    <p class="text-sm text-gray-600">Layout festivo com tons de vermelho e branco para a temporada de natal.</p>
+                    
+                    <div class="absolute top-4 right-4 hidden peer-checked:block text-red-500">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    </div>
+                </div>
+            </label>
+-->
         </div>
 
         <div class="flex justify-end">

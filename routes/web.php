@@ -48,6 +48,8 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
     // Rota que lista os leads/candidatos
     Route::get('/candidatos', [CandidateController::class, 'index'])->name('admin.candidates.index');
+    // Rota para exportar os leads/candidatos para Excel
+    Route::get('/dashboard/exportar-leads', [App\Http\Controllers\Admin\DashboardController::class, 'export'])->name('admin.dashboard.export');
     
     // Rotas de Questões
     Route::get('/questoes', [App\Http\Controllers\Admin\QuestionController::class, 'index'])->name('admin.questions.index');

@@ -8,6 +8,8 @@ use App\Models\Exam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Exports\LeadsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
@@ -35,5 +37,9 @@ class DashboardController extends Controller
         $chartData = $last7Days->pluck('count');
 
         return view('admin.dashboard', compact('totalLeads', 'totalExams', 'avgScore', 'chartLabels', 'chartData'));
+    }
+    public function export()
+    {
+        return Excel::download(new LeadsExport, 'relatorio_captacao_leads_' . date('d-m-Y') . '.xlsx');
     }
 }

@@ -24,12 +24,16 @@
             @if (Route::has('login'))
                 <nav class="flex items-center gap-4">
                     @auth
-                        <!-- Se já estiver logado, mostra o botão para a Dashboard -->
-                        <a href="{{ url('/dashboard') }}" class="font-bold text-green-700 hover:text-green-900 transition-colors flex items-center gap-2">
-                            <span>Ir para a Concentração</span> &rarr;
-                        </a>
+                        @if(auth()->user()->is_admin)
+                            <a href="{{ route('admin.questions.index') }}" class="font-bold text-green-700 hover:text-green-900 transition-colors flex items-center gap-2">
+                                <span>Painel Administrativo</span> &rarr;
+                            </a>
+                        @else
+                            <a href="{{ url('/dashboard') }}" class="font-bold text-green-700 hover:text-green-900 transition-colors flex items-center gap-2">
+                                <span>Ir para a Concentração</span> &rarr;
+                            </a>
+                        @endif
                     @else
-                        <!-- Se não estiver logado, mostra Login e Cadastro -->
                         <a href="{{ route('login') }}" class="font-bold text-gray-600 hover:text-green-700 transition-colors">
                             Entrar
                         </a>

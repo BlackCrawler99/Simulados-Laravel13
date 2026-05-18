@@ -17,28 +17,31 @@ class QuestionImport implements ToCollection
             // Pula a primeira linha (cabeçalhos)
             if ($index === 0) continue;
 
-            $enunciado = $row[0] ?? null;
-            $alternativa = $row[1] ?? null;
-            $correta = strtolower(trim($row[2] ?? ''));
-            $linkImagem = $row[3] ?? null;
+            // Mapeamento atualizado das colunas do Excel
+            $area        = $row[0] ?? null; // Coluna A
+            $enunciado   = $row[1] ?? null; // Coluna B
+            $alternativa = $row[2] ?? null; // Coluna C
+            $correta     = strtolower(trim($row[3] ?? '')); // Coluna D
+            $linkImagem  = $row[4] ?? null; // Coluna E
 
-            // Se a coluna A tem texto, significa que começou uma nova questão
+            // Se a coluna B (Enunciado) tem texto, significa que começou uma nova questão
             if (!empty($enunciado)) {
                 // Se já tínhamos uma questão anterior sendo montada, salva ela no banco
                 $this->saveQuestion($currentQuestion, $options);
 
                 // Inicia a nova questão
                 $currentQuestion = [
+                    'area'      => !empty($area) ? trim($area) : 'Geral',
                     'statement' => $enunciado,
-                    'image' => $linkImagem,
+                    'image'     => $linkImagem,
                 ];
                 $options = []; // Zera as alternativas
             }
 
-            // Se a coluna B tem texto, adiciona como alternativa da questão atual
+            // Se a coluna C (Alternativa) tem texto, adiciona como alternativa da questão atual
             if (!empty($alternativa)) {
                 $options[] = [
-                    'text' => $alternativa,
+                    'text'       => $alternativa,
                     'is_correct' => ($correta === 'sim'),
                 ];
             }
@@ -54,13 +57,14 @@ class QuestionImport implements ToCollection
         if (!$questionData || empty($optionsData)) return;
 
         $question = Question::create([
+            'area'      => $questionData['area'], // Salvando a nova coluna no banco
             'statement' => $questionData['statement'],
-            'image' => $questionData['image'],
+            'image'     => $questionData['image'],
         ]);
 
         foreach ($optionsData as $opt) {
             $question->options()->create([
-                'text' => $opt['text'],
+                'text'       => $opt['text'],
                 'is_correct' => $opt['is_correct'],
             ]);
         }

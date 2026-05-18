@@ -12,36 +12,40 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class QuestionTemplateExport implements FromArray, WithHeadings, WithStyles, ShouldAutoSize
 {
-    // Define os cabeçalhos
+    // Define os cabeçalhos atualizados
     public function headings(): array
     {
         return [
-            'Enunciado', 
-            'Alternativas', 
-            'Correta', 
-            'Link da Imagem (Opcional)'
+            'Área de Conhecimento', // Nova Coluna A
+            'Enunciado',            // Coluna B
+            'Alternativas',         // Coluna C
+            'Correta',              // Coluna D
+            'Link da Imagem (Opcional)' // Coluna E
         ];
     }
 
-    // Preenche os dados
+    // Preenche os dados de exemplo
     public function array(): array
     {
         return [
-            ['Qual é a capital do Brasil?', 'Rio de Janeiro', '', 'https://link-da-imagem.com/foto.jpg'],
-            ['', 'São Paulo', '', ''],
-            ['', 'Brasília', 'sim', ''],
-            ['', 'Salvador', '', ''],
-            ['', 'Curitiba', '', ''],
-            ['', '', '', ''], // Linha vazia
-            ['Quanto é 2 + 2?', '1', '', ''],
-            ['', '2', '', ''],
-            ['', '3', '', ''],
-            ['', '4', 'sim', ''],
-            ['', '5', '', ''],
+            // Exemplo 1: Ciências Humanas
+            ['Ciências Humanas', 'Qual é a capital do Brasil?', 'Rio de Janeiro', '', 'https://link-da-imagem.com/foto.jpg'],
+            ['', '', 'São Paulo', '', ''],
+            ['', '', 'Brasília', 'sim', ''],
+            ['', '', 'Salvador', '', ''],
+            ['', '', 'Curitiba', '', ''],
+            ['', '', '', '', ''], // Linha vazia para separar as questões visualmente
+            
+            // Exemplo 2: Matemática e suas Tecnologias
+            ['Matemática', 'Quanto é 2 + 2?', '1', '', ''],
+            ['', '', '2', '', ''],
+            ['', '', '3', '', ''],
+            ['', '', '4', 'sim', ''],
+            ['', '', '5', '', ''],
         ];
     }
 
-    // Aplica o design na planilha
+    // Aplica o design na planilha (A lógica permanece a mesma, pois o $lastCol cuida da coluna extra automaticamente)
     public function styles(Worksheet $sheet)
     {
         // Pega qual é a última linha e a última coluna preenchida

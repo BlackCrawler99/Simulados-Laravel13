@@ -10,7 +10,8 @@ class Question extends Model
     use HasFactory;
     protected $fillable = [
         'statement', 
-        'image'
+        'image',
+        'area',
     ];
     public function options()
     {

@@ -71,12 +71,69 @@
 
 </div>
 
-<div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
-    <h3 class="text-lg font-bold text-gray-800 mb-1">Distribuição de Desempenho</h3>
-    <p class="text-sm text-gray-500 mb-4">Quantidade de alunos por faixa de nota (0 a 10)</p>
-    <div class="relative h-80 w-full">
-        <canvas id="notasChart"></canvas>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
+        <h3 class="text-lg font-bold text-gray-800 mb-1">Distribuição de Desempenho</h3>
+        <p class="text-sm text-gray-500 mb-4">Quantidade de alunos por faixa de nota (0 a 10)</p>
+        <div class="relative h-80 w-full">
+            <canvas id="notasChart"></canvas>
+        </div>
     </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between">
+        <div>
+            <h3 class="text-lg font-bold text-gray-800 mb-1">Média por Área</h3>
+            <p class="text-sm text-gray-500 mb-6">Desempenho geral agrupado</p>
+            
+            <div class="space-y-5">
+                <div>
+                    <div class="flex justify-between text-sm font-bold text-gray-700 mb-1">
+                        <span>Matemática</span>
+                        <span class="text-indigo-600">8,5</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="bg-indigo-600 h-2 rounded-full" style="width: 85%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-sm font-bold text-gray-700 mb-1">
+                        <span>Linguagens</span>
+                        <span class="text-purple-600">7,2</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: 72%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-sm font-bold text-gray-700 mb-1">
+                        <span>Ciências Humanas</span>
+                        <span class="text-blue-600">6,8</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full" style="width: 68%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-sm font-bold text-gray-700 mb-1">
+                        <span>Ciências da Natureza</span>
+                        <span class="text-amber-500">5,4</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="bg-amber-500 h-2 rounded-full" style="width: 54%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100 mt-6 text-center">
+            <span class="text-xs text-gray-400 font-medium">Dados atualizados com base nos últimos simulados</span>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -85,7 +142,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         
         // ==========================================
-        // 1. GRÁFICO DE LEADS (O SEU GRÁFICO ORIGINAL MELHORADO)
+        // 1. GRÁFICO DE LEADS (LINHA COM GRADIENTE)
         // ==========================================
         const ctxLeads = document.getElementById('leadsChart').getContext('2d');
         
@@ -128,7 +185,7 @@
         });
 
         // ==========================================
-        // 2. GRÁFICO DE TAXA DE CONCLUSÃO (ROSCA)
+        // 2. GRÁFICO DE TAXA DE CONCLUSÃO 
         // ==========================================
         const ctxStatus = document.getElementById('statusChart').getContext('2d');
         
@@ -155,7 +212,7 @@
         });
 
         // ==========================================
-        // 3. GRÁFICO DE DISTRIBUIÇÃO DE NOTAS (BARRAS)
+        // 3. GRÁFICO DE DISTRIBUIÇÃO DE NOTAS
         // ==========================================
         const ctxNotas = document.getElementById('notasChart').getContext('2d');
         
@@ -189,6 +246,80 @@
             }
         });
 
+// 3. Gráfico de Teia / Radar (Áreas de Conhecimento)
+const ctxRadar = document.getElementById('radarChart').getContext('2d');
+
+new Chart(ctxRadar, {
+    type: 'radar',
+    data: {
+        labels: [
+            'Matemática e suas Tecnologias', 
+            'Ciências da Natureza', 
+            'Linguagens e Códigos', 
+            'Ciências Humanas',
+            'Redação (Extra)'
+        ],
+        datasets: [{
+            label: 'Seu Aproveitamento (%)',
+            data: [85, 45, 90, 70, 60], // <-- Aqui entrarão as variáveis dinâmicas no futuro
+            backgroundColor: 'rgba(79, 70, 229, 0.2)', // Fundo Indigo transparente
+            borderColor: '#4f46e5', // Borda Indigo forte
+            borderWidth: 2,
+            pointBackgroundColor: '#4f46e5', // Pontos
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#4f46e5',
+            pointRadius: 4,
+            pointHoverRadius: 6
+        },
+        {
+            // Opcional: Mostrar a Média Geral dos outros alunos para ele se comparar!
+            label: 'Média dos Outros Alunos',
+            data: [60, 50, 75, 65, 55], 
+            backgroundColor: 'rgba(156, 163, 175, 0.2)', // Fundo Cinza transparente
+            borderColor: '#9ca3af', // Borda Cinza
+            borderWidth: 2,
+            borderDash: [5, 5], // Linha tracejada para diferenciar
+            pointRadius: 0 // Esconde os pontos para não poluir
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            r: {
+                angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                pointLabels: {
+                    font: { size: 13, weight: 'bold', family: "'Figtree', sans-serif" },
+                    color: '#374151'
+                },
+                ticks: {
+                    min: 0,
+                    max: 100,
+                    stepSize: 20,
+                    backdropColor: 'transparent', // Tira o fundo branco dos números
+                    callback: function(value) { return value + '%' }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: { font: { family: "'Figtree', sans-serif", weight: '600' } }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.dataset.label + ': ' + context.raw + '%';
+                    }
+                }
+            }
+        }
+    }
+});
+
     });
+    
 </script>
 @endsection

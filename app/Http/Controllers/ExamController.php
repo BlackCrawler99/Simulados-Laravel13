@@ -103,16 +103,18 @@ class ExamController extends Controller
     public function show(Exam $exam)
     {
         if ($exam->user_id != auth()->id()) {
-            abort(403, 'Acesso não autorizado.');
+            abort(403);
         }
-
-        // Puxa 5 questões aleatórias
-        $questions = Question::with('options')->inRandomOrder()->take(5)->get();
-
-        // Percorre cada questão e embaralha a coleção de alternativas dela
-        $questions->each(function ($question) {
-            $question->setRelation('options', $question->options->shuffle());
-        });
+        $exam->load('answers.question.options');
+        $questions = $exam->answers->map(function ($answer) {
+            $question = $answer->question;
+            
+            // Embaralha a coleção de alternativas dela para o aluno
+            if ($question) {
+                $question->setRelation('options', $question->options->shuffle());
+            }   
+            return $question;
+        })->filter(); // O filter() remove qualquer item nulo caso alguma questão tenha sido deletada
 
         return view('exams.run', compact('exam', 'questions'));
     }

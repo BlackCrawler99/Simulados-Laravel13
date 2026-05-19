@@ -76,35 +76,50 @@ class ExamController extends Controller
             return back()->with('status', 'O banco de questões está vazio no momento.');
         }
 
-        // 3. A Mágica Matemática: Divide o total pelas áreas e arredonda para cima (ceil)
+        // 3. A cota ideal por área (arredondada para cima)
         $perArea = ceil($limit / $areas->count());
 
-        // 4. Cria uma "sacola" vazia para guardar as questões sorteadas
         $selectedQuestions = collect();
 
-        // 5. Vai em cada área e "pesca" a quantidade exata de questões
+        // 4. Tenta buscar a cota ideal de cada área
         foreach ($areas as $area) {
             $questionsFromArea = \App\Models\Question::where('area', $area)
                                     ->inRandomOrder()
                                     ->take($perArea)
                                     ->get();
             
-            // Joga na sacola
             $selectedQuestions = $selectedQuestions->merge($questionsFromArea);
         }
 
-        // 6. Embaralha a sacola inteira e corta EXATAMENTE no limite que o admin pediu
-        // Isso resolve o problema de sobras matemáticas (ex: pedir 22 questões divididas em 4 áreas)
+        // --- A MÁGICA DA COMPENSAÇÃO COMEÇA AQUI ---
+        // Verifica se a sacola não encheu (ex: queríamos 60, mas a área não tinha o suficiente)
+        $shortfall = $limit - $selectedQuestions->count();
+
+        if ($shortfall > 0) {
+            // Pega os IDs das questões que já estão na sacola para não repeti-las
+            $alreadySelectedIds = $selectedQuestions->pluck('id');
+
+            // Volta no banco e busca exatamente o que faltou, pegando de qualquer área que tenha sobra
+            $extraQuestions = \App\Models\Question::whereNotIn('id', $alreadySelectedIds)
+                                    ->inRandomOrder()
+                                    ->take($shortfall)
+                                    ->get();
+
+            $selectedQuestions = $selectedQuestions->merge($extraQuestions);
+        }
+        // --- FIM DA COMPENSAÇÃO ---
+
+        // 5. Embaralha tudo para o aluno não perceber e corta no limite exato
         $finalQuestions = $selectedQuestions->shuffle()->take($limit);
 
-        // 7. Cria o simulado carimbando o total de questões definitivas
+        // 6. Cria o simulado carimbando o total real de questões selecionadas
         $exam = auth()->user()->exams()->create([
-            'total_questions' => $finalQuestions->count(), // Salva o número real de questões encontradas
+            'total_questions' => $finalQuestions->count(), 
             'score'           => null,
             'completed_at'    => null,
         ]);
 
-        // 8. Grampeia as questões selecionadas na prova do aluno
+        // 7. Grampeia as questões selecionadas na prova do aluno
         foreach ($finalQuestions as $question) {
             $exam->answers()->create([
                 'question_id' => $question->id,

@@ -54,45 +54,61 @@ class ExamController extends Controller
         // =====================================================================
         // LÓGICA ATUAL (TENTATIVA ÚNICA)
         // =====================================================================
-        // Verifica se o aluno já tem algum simulado no banco (concluído ou não)
+        // Verifica se o aluno já tem algum simulado no banco
         $existingExam = auth()->user()->exams()->first();
 
         if ($existingExam) {
-            // Se já tem nota/terminou, bloqueia e manda de volta pra dashboard
             if ($existingExam->completed_at !== null) {
                 return redirect()->route('dashboard')
                                  ->with('status', 'Você já realizou o seu simulado. Apenas uma tentativa é permitida!');
             }
-            
-            // Se não terminou (fechou a aba sem querer), obriga a voltar pra prova antiga
-            // Nota: Como as questões já foram salvas na primeira vez, o F5 aqui está 100% protegido
             return redirect()->route('exams.show', $existingExam->id)
                              ->with('status', 'Você tem um simulado em andamento. Termine-o para ver sua nota!');
         }
 
-        // 1. Pega o limite de questões dinâmico do painel administrativo (Se não achar, usa 20)
+        // 1. Pega o limite total de questões configurado no painel
         $limit = \App\Models\Setting::where('key', 'exam_question_count')->value('value') ?? 20;
 
-        // 2. Busca as questões em ordem aleatória baseando-se no limite configurado
-        $questions = \App\Models\Question::inRandomOrder()->take($limit)->get();
-
-        // 3. Trava de segurança pedagógica: Evita criar uma prova vazia se o banco estiver zerado
-        if ($questions->isEmpty()) {
-            return back()->with('status', 'Opa! O simulado está sendo preparado. O banco de questões está vazio no momento.');
+        // 2. Descobre quantas áreas DIFERENTES existem no banco no momento
+        $areas = \App\Models\Question::select('area')->distinct()->pluck('area');
+        
+        if ($areas->isEmpty()) {
+            return back()->with('status', 'O banco de questões está vazio no momento.');
         }
 
-        // 4. Se passou pelas validações, cria o primeiro e único registro de simulado do aluno
+        // 3. A Mágica Matemática: Divide o total pelas áreas e arredonda para cima (ceil)
+        $perArea = ceil($limit / $areas->count());
+
+        // 4. Cria uma "sacola" vazia para guardar as questões sorteadas
+        $selectedQuestions = collect();
+
+        // 5. Vai em cada área e "pesca" a quantidade exata de questões
+        foreach ($areas as $area) {
+            $questionsFromArea = \App\Models\Question::where('area', $area)
+                                    ->inRandomOrder()
+                                    ->take($perArea)
+                                    ->get();
+            
+            // Joga na sacola
+            $selectedQuestions = $selectedQuestions->merge($questionsFromArea);
+        }
+
+        // 6. Embaralha a sacola inteira e corta EXATAMENTE no limite que o admin pediu
+        // Isso resolve o problema de sobras matemáticas (ex: pedir 22 questões divididas em 4 áreas)
+        $finalQuestions = $selectedQuestions->shuffle()->take($limit);
+
+        // 7. Cria o simulado carimbando o total de questões definitivas
         $exam = auth()->user()->exams()->create([
-            'total_questions' => $limit, // Congela a quantidade de questões desta tentativa aqui
+            'total_questions' => $finalQuestions->count(), // Salva o número real de questões encontradas
             'score'           => null,
             'completed_at'    => null,
         ]);
 
-        // 5. Vincula imediatamente as questões sorteadas gerando as respostas em branco no banco
-        foreach ($questions as $question) {
+        // 8. Grampeia as questões selecionadas na prova do aluno
+        foreach ($finalQuestions as $question) {
             $exam->answers()->create([
                 'question_id' => $question->id,
-                'option_id'   => null, // Começa em branco esperando o clique do aluno
+                'option_id'   => null,
             ]);
         }
 

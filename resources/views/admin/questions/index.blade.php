@@ -62,6 +62,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Área</th>
                     <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Enunciado</th>
                     <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Contém Imagem?</th>
                     <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Gabarito</th>
@@ -75,6 +76,11 @@
                             #{{ $question->id }}
                         </td>
                         
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2.5 py-1 bg-gray-100 text-gray-800 text-xs font-bold rounded-md border border-gray-200">
+                                {{ $question->area }}
+                            </span>
+                        </td>
                         <!-- Limita o texto do enunciado para não quebrar a tabela -->
                         <td class="px-6 py-4 text-sm text-gray-900 max-w-md truncate" title="{{ $question->statement }}">
                             {{ Str::limit($question->statement, 80) }}

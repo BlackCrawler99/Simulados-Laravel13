@@ -34,28 +34,53 @@
                 </div>
             @endif
 
-            {{-- Lógica de Premiação --}}
+            {{-- Lógica de Premiação e Gráfico de Teia 100% Dinâmico --}}
             @php
                 $bestExam = $exams->whereNotNull('score')->first();
                 $discount = 0;
                 $gift = '';
                 $score100 = 0;
 
+                // Arrays que vão alimentar o Chart.js dinamicamente
+                $radarLabels = [];
+                $radarValues = [];
+
                 if ($bestExam) {
                     $score100 = $bestExam->score * 10;
                     
-                    if ($score100 <= 30) {
-                        $discount = 30; $gift = '1 Figurinha';
-                    } elseif ($score100 <= 40) {
-                        $discount = 35; $gift = '2 Figurinhas';
-                    } elseif ($score100 <= 50) {
-                        $discount = 40; $gift = '3 Figurinhas';
-                    } elseif ($score100 <= 60) {
-                        $discount = 45; $gift = '4 Figurinhas';
-                    } elseif ($score100 <= 99) {
-                        $discount = 50; $gift = '5 Figurinhas';
-                    } else {
-                        $discount = 60; $gift = '1 Pacote de Figurinhas';
+                    // Lógica de prêmios
+                    if ($score100 <= 30) { $discount = 30; $gift = '1 Figurinha'; } 
+                    elseif ($score100 <= 40) { $discount = 35; $gift = '2 Figurinhas'; } 
+                    elseif ($score100 <= 50) { $discount = 40; $gift = '3 Figurinhas'; } 
+                    elseif ($score100 <= 60) { $discount = 45; $gift = '4 Figurinhas'; } 
+                    elseif ($score100 <= 99) { $discount = 50; $gift = '5 Figurinhas'; } 
+                    else { $discount = 60; $gift = '1 Pacote de Figurinhas'; }
+
+                    // Carrega as respostas e questões do simulado
+                    $bestExam->load('answers.question');
+
+                    $dynamicAreas = [];
+
+                    // O sistema varre as questões e descobre os nomes das áreas sozinho
+                    foreach ($bestExam->answers as $answer) {
+                        if ($answer->question) {
+                            $areaName = trim($answer->question->area); 
+                            
+                            if (!isset($dynamicAreas[$areaName])) {
+                                $dynamicAreas[$areaName] = ['total' => 0, 'correct' => 0];
+                            }
+
+                            $dynamicAreas[$areaName]['total']++;
+                            if ($answer->is_correct) {
+                                $dynamicAreas[$areaName]['correct']++;
+                            }
+                        }
+                    }
+
+                    // Monta os arrays finais transformando em porcentagem
+                    foreach ($dynamicAreas as $area => $stats) {
+                        $radarLabels[] = $area;
+                        $radarValues[] = round(($stats['correct'] / $stats['total']) * 100);
                     }
                 }
             @endphp
@@ -111,7 +136,7 @@
                         </div>
                     </div>
 
-                </div>
+                </div> {{-- Fecha o grid principal contendo os dois blocos --}}
             @endif
 
             {{-- Histórico de Avaliações em Cards --}}
@@ -167,8 +192,8 @@
         </div>
     </div>
 
-    {{-- Script do Gráfico de Radar --}}
-    @if($bestExam)
+    {{-- Script do Gráfico de Radar 100% Dinâmico --}}
+    @if($bestExam && count($radarLabels) > 0)
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -177,11 +202,11 @@
                 new Chart(ctxRadar, {
                     type: 'radar',
                     data: {
-                        labels: ['Matemática', 'Natureza', 'Linguagens', 'Humanas', 'Redação'],
+                        labels: {!! json_encode($radarLabels) !!},
                         datasets: [{
                             label: 'Aproveitamento',
-                            data: [85, 45, 90, 70, 60], 
-                            backgroundColor: 'rgba(79, 70, 229, 0.2)', // Indigo transparente
+                            data: {!! json_encode($radarValues) !!}, 
+                            backgroundColor: 'rgba(79, 70, 229, 0.2)',
                             borderColor: '#4f46e5',
                             borderWidth: 2,
                             pointBackgroundColor: '#4f46e5',
@@ -196,7 +221,6 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            // Removi a legenda para deixar o gráfico mais limpo e focar no visual
                             legend: { display: false },
                             tooltip: {
                                 callbacks: {
@@ -213,7 +237,7 @@
                                     color: '#6b7280'
                                 },
                                 ticks: {
-                                    display: false, // Esconde os números do meio da teia (fica muito mais limpo!)
+                                    display: false,
                                     min: 0,
                                     max: 100,
                                     stepSize: 25

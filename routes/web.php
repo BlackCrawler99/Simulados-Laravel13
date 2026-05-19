@@ -21,7 +21,12 @@ Route::get('/', function () {
 })->name('welcome');
 
 Route::get('/dashboard', function () {
-    // Busca todos os simulados do usuário logado, do mais recente para o mais antigo
+    // 1. SE FOR ADMIN (ROOT): Desvia o fluxo imediatamente para o painel administrativo
+    if (auth()->user()->is_admin) {
+        return redirect()->route('admin.dashboard');
+    }
+
+    // 2. SE FOR ALUNO: Segue o seu fluxo original idêntico ao que já estava funcionando
     $exams = auth()->user()->exams()->orderBy('created_at', 'desc')->get();
     
     return view('dashboard', compact('exams'));

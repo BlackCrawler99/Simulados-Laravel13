@@ -18,6 +18,24 @@
         @csrf
         @method('PUT')
 
+        <!-- Área de Conhecimento -->
+        <div class="mb-6">
+            <label for="area" class="block text-sm font-bold text-gray-700 mb-2">Área de Conhecimento</label>
+            
+            <input type="text" name="area" id="area" list="areas-list"
+                value="{{ isset($question) ? $question->area : old('area', 'Geral') }}"
+                placeholder="Ex: Matemática, Ciências Humanas..."
+                class="block w-full max-w-md rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 font-medium">
+            
+            <datalist id="areas-list">
+                @foreach($areas as $areaOption)
+                    <option value="{{ $areaOption }}">
+                @endforeach
+            </datalist>
+            
+            <p class="text-xs text-gray-400 mt-1">Digite uma nova área para criá-la ou selecione uma existente na lista.</p>
+        </div>
+        
         <!-- Enunciado -->
         <div class="mb-6">
             <label for="statement" class="block text-sm font-bold text-gray-700 mb-2">Enunciado da Questão *</label>

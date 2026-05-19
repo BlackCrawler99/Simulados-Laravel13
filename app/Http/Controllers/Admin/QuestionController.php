@@ -20,12 +20,16 @@ class QuestionController extends Controller
 
     public function create()
     {
-        return view('admin.questions.create');
+        // Pega todas as áreas únicas já cadastradas para sugerir no formulário
+        $areas = \App\Models\Question::select('area')->distinct()->pluck('area');
+
+        return view('admin.questions.create', compact('areas'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
+            'area' => 'required|string|max:100',
             'statement' => 'required|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'options' => 'required|array|min:5|max:5',
@@ -39,6 +43,7 @@ class QuestionController extends Controller
         }
 
         $question = Question::create([
+            'area' => trim($request->area),
             'statement' => $request->statement,
             'image' => $imagePath,
         ]);
@@ -53,11 +58,14 @@ class QuestionController extends Controller
         return redirect()->route('admin.questions.index')->with('status', 'Questão cadastrada com sucesso!');
     }
 
-    public function edit(Question $question)
+            public function edit(Question $question)
     {
-        $question->load('options');
-        return view('admin.questions.edit', compact('question'));
+        // Pega as áreas para o autocomplete e carrega a questão junto
+        $areas = \App\Models\Question::select('area')->distinct()->pluck('area');
+
+        return view('admin.questions.edit', compact('question', 'areas'));
     }
+
 
     public function update(Request $request, Question $question)
     {

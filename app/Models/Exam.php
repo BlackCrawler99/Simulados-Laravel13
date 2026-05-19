@@ -9,22 +9,27 @@ class Exam extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'score', 'completed_at', 'total_questions'];
+    // Adicione 'total_questions' na lista de campos permitidos
+    protected $fillable = [
+        'user_id',
+        'total_questions', // <-- A liberação que estava faltando!
+        'score',
+        'completed_at',
+    ];
 
-    protected function casts(): array
-    {
-        return [
-            'completed_at' => 'datetime',
-        ];
-    }
-
-    public function answers()
-    {
-        return $this->hasMany(Answer::class);
-    }
-
+    /**
+     * Relacionamento: Um simulado pertence a um aluno (User)
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relacionamento: Um simulado possui várias respostas (Answers)
+     */
+    public function answers()
+    {
+        return $this->hasMany(Answer::class); // Ou o nome correto do seu model de respostas
     }
 }

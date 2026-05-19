@@ -24,7 +24,7 @@
         </div>
         <div>
             <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Total de Leads</p>
-            <p class="text-3xl font-black text-gray-900">{{ $totalLeads ?? 1240 }}</p>
+            <p class="text-3xl font-black text-gray-900">{{ $totalLeads }}</p>
         </div>
     </div>
 
@@ -35,7 +35,7 @@
         </div>
         <div>
             <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Finalizados</p>
-            <p class="text-3xl font-black text-gray-900">{{ $totalExams ?? 892 }}</p>
+            <p class="text-3xl font-black text-gray-900">{{ $totalExams }}</p>
         </div>
     </div>
 
@@ -46,7 +46,7 @@
         </div>
         <div>
             <p class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">Média Geral</p>
-            <p class="text-3xl font-black text-gray-900">{{ isset($avgScore) ? number_format($avgScore, 1, ',', '') : '6,8' }}</p>
+            <p class="text-3xl font-black text-gray-900">{{ number_format($avgScore, 1, ',', '') }}</p>
         </div>
     </div>
 </div>
@@ -87,45 +87,19 @@
             <p class="text-sm text-gray-500 mb-6">Desempenho geral agrupado</p>
             
             <div class="space-y-5">
-                <div>
-                    <div class="flex justify-between text-sm font-bold text-gray-700 mb-1">
-                        <span>Matemática</span>
-                        <span class="text-indigo-600">8,5</span>
+                @forelse($avgAreas as $areaName => $media)
+                    <div>
+                        <div class="flex justify-between text-sm font-bold text-gray-700 mb-1">
+                            <span>{{ $areaName }}</span>
+                            <span class="text-indigo-600">{{ number_format($media, 1, ',', '') }}</span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-2">
+                            <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ $media * 10 }}%"></div>
+                        </div>
                     </div>
-                    <div class="w-full bg-gray-100 rounded-full h-2">
-                        <div class="bg-indigo-600 h-2 rounded-full" style="width: 85%"></div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex justify-between text-sm font-bold text-gray-700 mb-1">
-                        <span>Linguagens</span>
-                        <span class="text-purple-600">7,2</span>
-                    </div>
-                    <div class="w-full bg-gray-100 rounded-full h-2">
-                        <div class="bg-purple-600 h-2 rounded-full" style="width: 72%"></div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex justify-between text-sm font-bold text-gray-700 mb-1">
-                        <span>Ciências Humanas</span>
-                        <span class="text-blue-600">6,8</span>
-                    </div>
-                    <div class="w-full bg-gray-100 rounded-full h-2">
-                        <div class="bg-blue-600 h-2 rounded-full" style="width: 68%"></div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex justify-between text-sm font-bold text-gray-700 mb-1">
-                        <span>Ciências da Natureza</span>
-                        <span class="text-amber-500">5,4</span>
-                    </div>
-                    <div class="w-full bg-gray-100 rounded-full h-2">
-                        <div class="bg-amber-500 h-2 rounded-full" style="width: 54%"></div>
-                    </div>
-                </div>
+                @empty
+                    <p class="text-sm text-gray-500 text-center py-4">Nenhum dado de simulado disponível.</p>
+                @endforelse
             </div>
         </div>
 
@@ -141,17 +115,13 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         
-        // ==========================================
-        // 1. GRÁFICO DE LEADS (LINHA COM GRADIENTE)
-        // ==========================================
+        // 1. GRÁFICO DE LEADS (LINHA DINÂMICA)
         const ctxLeads = document.getElementById('leadsChart').getContext('2d');
-        
-        // Fallback para demonstração de vendas caso a variável esteja vazia
-        const labelsLeads = {!! isset($chartLabels) ? json_encode($chartLabels) : "['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']" !!};
-        const dataLeads = {!! isset($chartData) ? json_encode($chartData) : "[12, 19, 35, 42, 28, 55, 70]" !!};
+        const labelsLeads = {!! json_encode($chartLabels) !!};
+        const dataLeads = {!! json_encode($chartData) !!};
 
         let gradientLeads = ctxLeads.createLinearGradient(0, 0, 0, 300);
-        gradientLeads.addColorStop(0, 'rgba(79, 70, 229, 0.4)'); // Indigo transparente
+        gradientLeads.addColorStop(0, 'rgba(79, 70, 229, 0.4)');
         gradientLeads.addColorStop(1, 'rgba(79, 70, 229, 0.0)');
 
         new Chart(ctxLeads, {
@@ -170,7 +140,7 @@
                     pointRadius: 4,
                     pointHoverRadius: 6,
                     fill: true,
-                    tension: 0.4 // Linha suave
+                    tension: 0.4
                 }]
             },
             options: {
@@ -184,9 +154,7 @@
             }
         });
 
-        // ==========================================
-        // 2. GRÁFICO DE TAXA DE CONCLUSÃO 
-        // ==========================================
+        // 2. GRÁFICO DE TAXA DE CONCLUSÃO (DINÂMICO)
         const ctxStatus = document.getElementById('statusChart').getContext('2d');
         
         new Chart(ctxStatus, {
@@ -194,9 +162,8 @@
             data: {
                 labels: ['Finalizados', 'Incompletos'],
                 datasets: [{
-                    // Coloquei dados fictícios bonitos para a apresentação
-                    data: [{{ $totalExams ?? 892 }}, 348], 
-                    backgroundColor: ['#10b981', '#f59e0b'], // Verde e Amarelo/Laranja
+                    data: [{{ $totalExams }}, {{ $totalIncompleteExams }}], 
+                    backgroundColor: ['#10b981', '#f59e0b'],
                     borderWidth: 0,
                     hoverOffset: 4
                 }]
@@ -211,9 +178,7 @@
             }
         });
 
-        // ==========================================
-        // 3. GRÁFICO DE DISTRIBUIÇÃO DE NOTAS
-        // ==========================================
+        // 3. GRÁFICO DE DISTRIBUIÇÃO DE NOTAS (DINÂMICO)
         const ctxNotas = document.getElementById('notasChart').getContext('2d');
         
         new Chart(ctxNotas, {
@@ -222,16 +187,9 @@
                 labels: ['0-2', '2-4', '4-6', '6-8', '8-10 (Destaques)'],
                 datasets: [{
                     label: 'Quantidade de Alunos',
-                    // Dados fictícios com uma curva de sino perfeita (maioria na média 6)
-                    data: [15, 45, 180, 420, 110], 
-                    backgroundColor: [
-                        '#ef4444', // Vermelho (0-2)
-                        '#f97316', // Laranja (2-4)
-                        '#eab308', // Amarelo (4-6)
-                        '#3b82f6', // Azul (6-8)
-                        '#10b981'  // Verde (8-10)
-                    ],
-                    borderRadius: 6, // Deixa as pontas das barras arredondadas
+                    data: {!! json_encode($notasDistribution) !!}, 
+                    backgroundColor: ['#ef4444', '#f97316', '#eab308', '#3b82f6', '#10b981'],
+                    borderRadius: 6,
                     borderWidth: 0
                 }]
             },
@@ -246,80 +204,6 @@
             }
         });
 
-// 3. Gráfico de Teia / Radar (Áreas de Conhecimento)
-const ctxRadar = document.getElementById('radarChart').getContext('2d');
-
-new Chart(ctxRadar, {
-    type: 'radar',
-    data: {
-        labels: [
-            'Matemática e suas Tecnologias', 
-            'Ciências da Natureza', 
-            'Linguagens e Códigos', 
-            'Ciências Humanas',
-            'Redação (Extra)'
-        ],
-        datasets: [{
-            label: 'Seu Aproveitamento (%)',
-            data: [85, 45, 90, 70, 60], // <-- Aqui entrarão as variáveis dinâmicas no futuro
-            backgroundColor: 'rgba(79, 70, 229, 0.2)', // Fundo Indigo transparente
-            borderColor: '#4f46e5', // Borda Indigo forte
-            borderWidth: 2,
-            pointBackgroundColor: '#4f46e5', // Pontos
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: '#4f46e5',
-            pointRadius: 4,
-            pointHoverRadius: 6
-        },
-        {
-            // Opcional: Mostrar a Média Geral dos outros alunos para ele se comparar!
-            label: 'Média dos Outros Alunos',
-            data: [60, 50, 75, 65, 55], 
-            backgroundColor: 'rgba(156, 163, 175, 0.2)', // Fundo Cinza transparente
-            borderColor: '#9ca3af', // Borda Cinza
-            borderWidth: 2,
-            borderDash: [5, 5], // Linha tracejada para diferenciar
-            pointRadius: 0 // Esconde os pontos para não poluir
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            r: {
-                angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
-                grid: { color: 'rgba(0, 0, 0, 0.1)' },
-                pointLabels: {
-                    font: { size: 13, weight: 'bold', family: "'Figtree', sans-serif" },
-                    color: '#374151'
-                },
-                ticks: {
-                    min: 0,
-                    max: 100,
-                    stepSize: 20,
-                    backdropColor: 'transparent', // Tira o fundo branco dos números
-                    callback: function(value) { return value + '%' }
-                }
-            }
-        },
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: { font: { family: "'Figtree', sans-serif", weight: '600' } }
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return context.dataset.label + ': ' + context.raw + '%';
-                    }
-                }
-            }
-        }
-    }
-});
-
     });
-    
 </script>
 @endsection

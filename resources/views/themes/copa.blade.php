@@ -107,8 +107,9 @@
                             @endfor
                         </div>
                         
-                        <div class="mt-12">
-                            <a href="{{ route('register') }}" class="px-10 py-4 bg-green-700 text-white font-black uppercase tracking-wider rounded-full shadow-lg hover:bg-green-800 transition-all hover:scale-105">
+                        <div class="mt-8">
+                            <a href="{{ route('register') }}" 
+                            class="inline-block px-6 py-3 sm:px-10 sm:py-4 bg-green-700 text-white font-black uppercase tracking-wider rounded-full shadow-lg hover:bg-green-800 transition-all text-sm sm:text-base text-center leading-tight">
                                 Quero começar minha coleção agora!
                             </a>
                         </div>

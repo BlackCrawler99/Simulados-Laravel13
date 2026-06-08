@@ -118,13 +118,13 @@
                             
                             <div class="flex items-center gap-6">
                                 <div class="flex-shrink-0 w-24 h-24 bg-white rounded-full flex flex-col items-center justify-center text-indigo-600 shadow-inner">
-                                    <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wide">Sua Nota</span>
-                                    <span class="text-3xl font-extrabold">{{ $score100 }}</span>
+                                    <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wide">Aproveitamento</span>
+                                    <span class="text-3xl font-extrabold">{{ $score100 }}%</span>
                                 </div>
                                 
                                 <div>
                                     <h3 class="text-2xl font-bold mb-1">Parabéns, {{ explode(' ', Auth::user()->name)[0] }}! 🎉</h3>
-                                    <p class="text-indigo-100 text-sm">Com base no seu melhor desempenho, você garantiu:</p>
+                                    <p class="text-indigo-100 text-sm">Com base no seu desempenho, você garantiu:</p>
                                     <ul class="mt-2 space-y-1 font-semibold text-lg">
                                         <li class="flex items-center gap-2">
                                             <svg class="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
@@ -141,8 +141,8 @@
                                 // Puxa o número do banco (ou usa um padrão de emergência)
                                 $waNumber = \App\Models\Setting::where('key', 'whatsapp_number')->value('value') ?? '5541998131679';
                                 
-                                // Puxa o template da mensagem do banco
-                                $waRawMessage = \App\Models\Setting::where('key', 'whatsapp_message')->value('value') ?? 'Olá! Fiz o Simulado, tirei a nota {nota} e garanti minha bolsa de {bolsa}% e {premio}.';
+                                // Puxa o template da mensagem do banco - Corrigido para não confundir com nota 0 a 10
+                                $waRawMessage = \App\Models\Setting::where('key', 'whatsapp_message')->value('value') ?? 'Olá! Fiz o Simulado, tive {nota}% de aproveitamento e garanti minha bolsa de {bolsa}%.';
 
                                 // Troca as tags pelas variáveis reais do aluno
                                 $waReplacedMessage = str_replace(
@@ -198,7 +198,7 @@
                             </div>
                             
                             <div class="px-6 py-6 flex-grow text-center">
-                                <p class="text-gray-500 text-sm mb-1">Nota Final</p>
+                                <p class="text-gray-500 text-sm mb-1">Nota (0 a 10)</p>
                                 <p class="text-4xl font-extrabold {{ $exam->score >= 6 ? 'text-green-600' : 'text-red-500' }}">
                                     {{ $exam->score !== null ? number_format($exam->score, 1, ',', '') : '--' }}
                                 </p>

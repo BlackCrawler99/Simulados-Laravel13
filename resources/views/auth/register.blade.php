@@ -85,7 +85,7 @@
             </div>
 
             <!-- Campo de Curso de Interesse -->
-            <div class="mt-4">
+            <div class="md:col-span-2">
                 <label for="interested_course" class="block text-sm font-bold text-gray-700">
                     Não encontrou seu curso na lista? Digite o curso de interesse:
                 </label>

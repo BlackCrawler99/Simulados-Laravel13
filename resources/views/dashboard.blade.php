@@ -113,65 +113,58 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     
                     {{-- LADO ESQUERDO: Banner de Prêmio (Ocupa 2/3 da tela) --}}
-                    <div class="lg:col-span-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-sm border border-transparent overflow-hidden text-white flex flex-col justify-center">
-                        <div class="p-8 flex flex-col md:flex-row items-center justify-between h-full gap-6">
+                    <div class="lg:col-span-2 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 rounded-2xl shadow-sm border border-transparent overflow-hidden text-white flex flex-col justify-center relative">
+                        <div class="absolute top-0 right-0 -mt-8 -mr-8 w-48 h-48 bg-white opacity-10 rounded-full blur-3xl pointer-events-none"></div>
+
+                        <div class="p-8 flex flex-col md:flex-row items-center justify-between h-full gap-8 relative z-10">
                             
-                            <div class="flex items-center gap-6">
-                                <div class="flex-shrink-0 w-24 h-24 bg-white rounded-full flex flex-col items-center justify-center text-indigo-600 shadow-inner">
-                                    <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wide">Aproveitamento</span>
-                                    <span class="text-3xl font-extrabold">{{ $score100 }}%</span>
+                            <div class="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+                                <div class="flex-shrink-0 w-28 h-28 bg-white rounded-full flex flex-col items-center justify-center text-indigo-600 shadow-xl border-4 border-indigo-300/30">
+                                    <span class="text-[10px] font-black uppercase tracking-tighter text-indigo-400 mb-1">Acertos</span>
+                                    <span class="text-4xl font-black leading-none">{{ $score100 }}<span class="text-2xl">%</span></span>
                                 </div>
                                 
                                 <div>
-                                    <h3 class="text-2xl font-bold mb-1">Parabéns, {{ explode(' ', Auth::user()->name)[0] }}! 🎉</h3>
-                                    <p class="text-indigo-100 text-sm">Com base no seu desempenho, você garantiu:</p>
-                                    <ul class="mt-2 space-y-1 font-semibold text-lg">
-                                        <li class="flex items-center gap-2">
-                                            <svg class="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                    <h3 class="text-2xl font-black mb-2">Parabéns, {{ explode(' ', Auth::user()->name)[0] }}! 🎉</h3>
+                                    <p class="text-indigo-100 text-sm mb-3">Com seu desempenho, você garantiu:</p>
+                                    
+                                    <ul class="space-y-2 font-bold text-sm sm:text-base">
+                                        <li class="flex items-center justify-center sm:justify-start gap-2 bg-white/10 px-4 py-2 rounded-lg w-fit mx-auto sm:mx-0 border border-white/10 shadow-sm">
+                                            <svg class="w-5 h-5 text-yellow-400 drop-shadow" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
                                             Bolsa de {{ $discount }}%
                                         </li>
-                                        <li class="flex items-center gap-2">
-                                            <svg class="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                        <li class="flex items-center justify-center sm:justify-start gap-2 bg-white/10 px-4 py-2 rounded-lg w-fit mx-auto sm:mx-0 border border-white/10 shadow-sm">
+                                            <svg class="w-5 h-5 text-yellow-400 drop-shadow" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
                                             {{ $gift }}
                                         </li>
                                     </ul>
                                 </div>
                             </div>
+
                             @php
-                                // Puxa o número do banco (ou usa um padrão de emergência)
                                 $waNumber = \App\Models\Setting::where('key', 'whatsapp_number')->value('value') ?? '5541998131679';
-                                
-                                // Puxa o template da mensagem do banco - Corrigido para não confundir com nota 0 a 10
-                                $waRawMessage = \App\Models\Setting::where('key', 'whatsapp_message')->value('value') ?? 'Olá! Fiz o Simulado, tive {nota}% de aproveitamento e garanti minha bolsa de {bolsa}%.';
-
-                                // Troca as tags pelas variáveis reais do aluno
-                                $waReplacedMessage = str_replace(
-                                    ['{nota}', '{bolsa}', '{premio}'],
-                                    [$score100, $discount, $gift],
-                                    $waRawMessage
-                                );
-
-                                // Formata para URL (substituindo espaços por %20, etc)
+                                $waRawMessage = \App\Models\Setting::where('key', 'whatsapp_message')->value('value') ?? 'Olá! Fiz o Simulado, tive {nota}% de aproveitamento e garanti minha bolsa de {bolsa}% e {premio}.';
+                                $waReplacedMessage = str_replace(['{nota}', '{bolsa}', '{premio}'], [$score100, $discount, $gift], $waRawMessage);
                                 $waMessage = urlencode($waReplacedMessage);
                             @endphp
 
-                            <a href="https://wa.me/{{ $waNumber }}?text={{ $waMessage }}" target="_blank" class="px-6 py-3 bg-green-500 text-white font-bold rounded-full shadow-lg hover:bg-green-400 hover:scale-105 transition-all flex items-center gap-2 text-base whitespace-nowrap">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-5.824 4.74-10.563 10.581-10.563 5.824 0 10.563 4.74 10.564 10.563 0 5.824-4.74 10.563-10.563 10.563z"/></svg>
+                            <a href="https://wa.me/{{ $waNumber }}?text={{ $waMessage }}" target="_blank" class="px-6 py-4 bg-[#25D366] text-white font-black rounded-xl shadow-lg hover:bg-[#20bd5a] hover:scale-105 transition-all flex items-center gap-2 whitespace-nowrap border-b-4 border-[#1da851]">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-5.824 4.74-10.563 10.581-10.563 5.824 0 10.563 4.74 10.564 10.563 0 5.824-4.74 10.563-10.563 10.563z"/></svg>
                                 Agendar Retirada
                             </a>
                         </div>
                     </div>
 
-                    {{-- LADO DIREITO: Gráfico de Radar (Ocupa 1/3 da tela) --}}
+                    {{-- LADO DIREITO: Gráfico de Radar Ajustado --}}
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col justify-center h-full">
-                        <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2 text-center">Desempenho por Área</h4>
+                        <h4 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 text-center">Desempenho por Área</h4>
                         
-                        <div class="relative h-48 w-full flex justify-center">
+                        <div class="relative h-72 w-full flex justify-center pb-4">
                             <canvas id="radarChart"></canvas>
                         </div>
                     </div>
 
-                </div> {{-- Fecha o grid principal contendo os dois blocos --}}
+                </div>
             @endif
 
             {{-- Histórico de Avaliações em Cards --}}
@@ -255,6 +248,9 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        layout: {
+                            padding: 10
+                        },
                         plugins: {
                             legend: { display: false },
                             tooltip: {
@@ -268,7 +264,7 @@
                                 angleLines: { color: 'rgba(0, 0, 0, 0.05)' },
                                 grid: { color: 'rgba(0, 0, 0, 0.05)' },
                                 pointLabels: {
-                                    font: { size: 10, weight: 'bold', family: "'Figtree', sans-serif" },
+                                    font: { size: 9, weight: 'bold', family: "'Figtree', sans-serif" }, // Fonte reduzida
                                     color: '#6b7280'
                                 },
                                 ticks: {

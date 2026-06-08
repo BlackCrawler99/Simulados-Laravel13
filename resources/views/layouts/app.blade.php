@@ -7,7 +7,7 @@
         <link rel="preload" as="image" href="{{ asset('images/logo_branca.png') }}">
 
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'Simulado ENEM') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

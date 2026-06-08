@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Exam extends Model
 {
     use HasFactory;
-
+    
+    protected $casts = [
+        'completed_at' => 'datetime',
+    ];
     // Adicione 'total_questions' na lista de campos permitidos
     protected $fillable = [
         'user_id',

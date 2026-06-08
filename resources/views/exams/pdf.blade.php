@@ -15,7 +15,7 @@
 <body>
     <div class="header">
         <h1>Simulado Conhecimentos Gerais</h1>
-        <p>Candidato: {{ $exam->user->name ?? 'Aluno Removido' }} | Data: {{ $exam->completed_at->format('d/m/Y H:i') }}</p>
+        <p>Candidato: {{ $exam->user->name ?? 'Aluno Removido' }} | Data: {{ $exam->completed_at?->format('d/m/Y H:i') ?? 'Simulado em andamento' }}</p>
     </div>
     <div class="score-box">
         Nota Final: {{ number_format($exam->score, 1, ',', '') }} / 10,0

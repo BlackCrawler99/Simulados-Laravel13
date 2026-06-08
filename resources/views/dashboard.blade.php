@@ -46,15 +46,38 @@
                 $radarValues = [];
 
                 if ($bestExam) {
-                    $score100 = $bestExam->score * 10;
+                    // 1. Puxa a porcentagem máxima de bolsa definida no painel Admin (padrão 50%)
+                    $maxDiscount = \App\Models\Setting::where('key', 'max_scholarship')->value('value') ?? 50;
+
+                    // 2. Calcula a porcentagem real de acertos (Score / Total de Questões * 100)
+                    $totalQuestions = $bestExam->total_questions > 0 ? $bestExam->total_questions : 1;
+                    $score100 = round(($bestExam->score / $totalQuestions) * 100);
                     
-                    // Lógica de prêmios
-                    if ($score100 <= 30) { $discount = 30; $gift = '1 Figurinha'; } 
-                    elseif ($score100 <= 40) { $discount = 35; $gift = '2 Figurinhas'; } 
-                    elseif ($score100 <= 50) { $discount = 40; $gift = '3 Figurinhas'; } 
-                    elseif ($score100 <= 60) { $discount = 45; $gift = '4 Figurinhas'; } 
-                    elseif ($score100 <= 99) { $discount = 50; $gift = '5 Figurinhas'; } 
-                    else { $discount = 60; $gift = '1 Pacote de Figurinhas'; }
+                    // Puxa os prêmios do banco de dados (com defaults de segurança)
+                    $gift1 = \App\Models\Setting::where('key', 'reward_tier_1')->value('value') ?? '1 Figurinha';
+                    $gift2 = \App\Models\Setting::where('key', 'reward_tier_2')->value('value') ?? '2 Figurinhas';
+                    $gift3 = \App\Models\Setting::where('key', 'reward_tier_3')->value('value') ?? '3 Figurinhas';
+                    $gift4 = \App\Models\Setting::where('key', 'reward_tier_4')->value('value') ?? '4 Figurinhas';
+                    $gift5 = \App\Models\Setting::where('key', 'reward_tier_5')->value('value') ?? '5 Figurinhas';
+                    $gift6 = \App\Models\Setting::where('key', 'reward_tier_6')->value('value') ?? '1 Pacote de Figurinhas';
+
+                    // 3. Lógica de prêmios base injetando as variáveis dinâmicas
+                    if ($score100 <= 30) { 
+                        $baseDiscount = 30; $gift = $gift1; 
+                    } elseif ($score100 <= 40) { 
+                        $baseDiscount = 35; $gift = $gift2; 
+                    } elseif ($score100 <= 50) { 
+                        $baseDiscount = 40; $gift = $gift3; 
+                    } elseif ($score100 <= 60) { 
+                        $baseDiscount = 45; $gift = $gift4; 
+                    } elseif ($score100 <= 99) { 
+                        $baseDiscount = 50; $gift = $gift5; 
+                    } else { 
+                        $baseDiscount = 100; $gift = $gift6; 
+                    }
+
+                    // 4. TRAVA DE SEGURANÇA: O desconto final nunca será maior que o limite da Instituição
+                    $discount = min($baseDiscount, $maxDiscount);
 
                     // Carrega as respostas e questões do simulado
                     $bestExam->load('answers.question');
@@ -77,10 +100,10 @@
                         }
                     }
 
-                    // Monta os arrays finais transformando em porcentagem
+                    // Monta os arrays finais transformando em porcentagem (com proteção contra divisão por zero)
                     foreach ($dynamicAreas as $area => $stats) {
                         $radarLabels[] = $area;
-                        $radarValues[] = round(($stats['correct'] / $stats['total']) * 100);
+                        $radarValues[] = $stats['total'] > 0 ? round(($stats['correct'] / $stats['total']) * 100) : 0;
                     }
                 }
             @endphp
@@ -114,12 +137,24 @@
                                     </ul>
                                 </div>
                             </div>
-
                             @php
-                                $waMessage = urlencode("Olá! Fiz o Simulado ENEM da UniEnsino, tirei a nota {$score100} e garanti minha bolsa de {$discount}% e {$gift}. Gostaria de agendar a retirada e minha matrícula!");
-                                $waNumber = "5541998131679"; 
+                                // Puxa o número do banco (ou usa um padrão de emergência)
+                                $waNumber = \App\Models\Setting::where('key', 'whatsapp_number')->value('value') ?? '5541998131679';
+                                
+                                // Puxa o template da mensagem do banco
+                                $waRawMessage = \App\Models\Setting::where('key', 'whatsapp_message')->value('value') ?? 'Olá! Fiz o Simulado, tirei a nota {nota} e garanti minha bolsa de {bolsa}% e {premio}.';
+
+                                // Troca as tags pelas variáveis reais do aluno
+                                $waReplacedMessage = str_replace(
+                                    ['{nota}', '{bolsa}', '{premio}'],
+                                    [$score100, $discount, $gift],
+                                    $waRawMessage
+                                );
+
+                                // Formata para URL (substituindo espaços por %20, etc)
+                                $waMessage = urlencode($waReplacedMessage);
                             @endphp
-                            
+
                             <a href="https://wa.me/{{ $waNumber }}?text={{ $waMessage }}" target="_blank" class="px-6 py-3 bg-green-500 text-white font-bold rounded-full shadow-lg hover:bg-green-400 hover:scale-105 transition-all flex items-center gap-2 text-base whitespace-nowrap">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-5.824 4.74-10.563 10.581-10.563 5.824 0 10.563 4.74 10.564 10.563 0 5.824-4.74 10.563-10.563 10.563z"/></svg>
                                 Agendar Retirada

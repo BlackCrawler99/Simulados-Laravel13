@@ -48,7 +48,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/simulado/{exam}/resultado', [App\Http\Controllers\ExamController::class, 'result'])->name('exams.result');
 });
 ################# ADMIN #################
-Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {    
+Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
+    
+    // --- ÁREA EXCLUSIVA DO DESENVOLVEDOR ---
+    // Mesmo estando dentro do /admin, só o super_admin passa daqui
+    Route::middleware(['super_admin'])->group(function () {
+        Route::get('/modulos', [App\Http\Controllers\Dev\FeatureController::class, 'index'])->name('admin.features.index');
+        Route::post('/modulos', [App\Http\Controllers\Dev\FeatureController::class, 'store'])->name('admin.features.store');
+    });
+
     // Rota da Dashboard Administrativa
     Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
     // Rota que lista os leads/candidatos

@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'is_admin' => \App\Http\Middleware\IsAdminMiddleware::class,
             'super_admin' => \App\Http\Middleware\IsSuperAdmin::class,
+            'module.enabled' => \App\Http\Middleware\ModuleEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

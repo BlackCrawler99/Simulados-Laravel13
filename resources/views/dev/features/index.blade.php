@@ -30,6 +30,15 @@
             </label>
 
             <label class="flex items-center space-x-4 cursor-pointer p-5 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                <input type="checkbox" name="module_colegios" class="form-checkbox h-6 w-6 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" 
+                    {{ ($features['module_colegios'] ?? false) ? 'checked' : '' }}>
+                <div>
+                    <span class="text-gray-900 font-bold text-lg block">Módulo Colegios</span>
+                    <span class="text-gray-500 text-sm">Habilita o módulo de gerenciamento de colegios.</span>
+                </div>
+            </label>
+
+            <label class="flex items-center space-x-4 cursor-pointer p-5 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
                 <input type="checkbox" name="module_school_reports" class="form-checkbox h-6 w-6 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" 
                        {{ $features['module_school_reports'] ? 'checked' : '' }}>
                 <div>

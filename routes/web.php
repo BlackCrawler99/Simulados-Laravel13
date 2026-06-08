@@ -100,4 +100,12 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
     Route::post('/configuracoes/regras', [App\Http\Controllers\Admin\SettingController::class, 'updateRules'])->name('admin.settings.update-rules');
 });
 
+Route::middleware(['auth', 'admin', 'module.enabled'])->group(function () {
+    // Todas as rotas que começarem com 'admin.colegios' serão verificadas automaticamente
+    Route::get('/admin/colegios', [SchoolController::class, 'index'])->name('admin.colegios.index');
+    
+    // Todas as rotas que começarem com 'admin.vocational' serão verificadas automaticamente
+    Route::get('/admin/vocacional', [VocationalController::class, 'index'])->name('admin.vocational.index');
+});
+
 require __DIR__.'/auth.php';

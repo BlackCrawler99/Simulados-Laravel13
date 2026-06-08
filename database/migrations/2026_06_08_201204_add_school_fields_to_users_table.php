@@ -9,18 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Adiciona a coluna permitindo valores nulos, logo após a coluna de senha ou curso_id
-           // $table->string('interested_course')->nullable()->after('password');
+            $table->foreignId('school_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('school_class_id')->nullable()->constrained()->onDelete('set null');
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-           // $table->dropColumn('interested_course');
+            //
         });
     }
 };

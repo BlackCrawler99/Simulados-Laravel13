@@ -18,4 +18,13 @@ class IsAdminMiddleware
         // Se não for admin, aborta com erro 403 (Acesso Negado) ou redireciona
         abort(403, 'Acesso restrito apenas para administradores.');
     }
+
+    public function hasPremiumModule($moduleKey) 
+    {
+        // Puxa o valor da tabela settings (que você já usa)
+        $isEnabled = \App\Models\Setting::where('key', $moduleKey)->value('value');
+    
+        // Se o seu settings guarda 'true' ou '1', essa checagem resolve
+        return (bool) $isEnabled;
+    }
 }

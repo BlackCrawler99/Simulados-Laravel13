@@ -19,7 +19,8 @@ use Illuminate\Notifications\Notifiable;
         'uf',
         'desired_course',
         'school_year',
-        'accepts_info'
+        'accepts_info',
+        'interested_course',
     ])]
 #[Hidden([
         'password',

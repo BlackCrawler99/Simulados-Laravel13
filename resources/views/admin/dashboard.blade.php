@@ -16,7 +16,6 @@
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center hover:shadow-md transition-shadow relative overflow-hidden">
         <div class="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -z-10"></div>
         <div class="p-4 rounded-full bg-blue-100 text-blue-600 mr-5 shadow-inner">
@@ -52,7 +51,6 @@
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-    
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
         <h3 class="text-lg font-bold text-gray-800 mb-1">Captação de Novos Leads</h3>
         <p class="text-sm text-gray-500 mb-4">Volume de cadastros nos últimos 7 dias</p>
@@ -68,11 +66,9 @@
             <canvas id="statusChart"></canvas>
         </div>
     </div>
-
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-    
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
         <h3 class="text-lg font-bold text-gray-800 mb-1">Distribuição de Desempenho</h3>
         <p class="text-sm text-gray-500 mb-4">Quantidade de alunos por faixa de nota (0 a 10)</p>
@@ -105,6 +101,78 @@
 
         <div class="pt-4 border-t border-gray-100 mt-6 text-center">
             <span class="text-xs text-gray-400 font-medium">Dados atualizados com base nos últimos simulados</span>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 w-full">
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-black text-gray-800">Cursos Mais Procurados</h3>
+            <span class="text-xs font-bold text-blue-700 bg-blue-100 px-3 py-1 rounded-full">Oficiais</span>
+        </div>
+        <div class="space-y-5">
+            @forelse($topCourses as $course)
+                @php $percentage = $maxCourseCount > 0 ? ($course->total / $maxCourseCount) * 100 : 0; @endphp
+                <div class="relative">
+                    <div class="flex justify-between text-sm font-bold mb-1.5">
+                        <span class="text-gray-700 truncate pr-4" title="{{ $course->desired_course }}">{{ $course->desired_course }}</span>
+                        <span class="text-blue-600 tabular-nums">{{ $course->total }}</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-500 to-blue-400 h-2.5 rounded-full transition-all duration-500" style="width: {{ $percentage }}%"></div>
+                    </div>
+                </div>
+            @empty
+                <p class="text-sm text-gray-500 text-center py-4">Nenhum dado registrado.</p>
+            @endforelse
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-black text-gray-800">Demanda Reprimida</h3>
+            <span class="text-xs font-bold text-green-700 bg-green-100 px-3 py-1 rounded-full">Sugeridos</span>
+        </div>
+        <div class="space-y-5">
+            @forelse($topInterestedCourses as $course)
+                @php $percentage = $maxInterested > 0 ? ($course->total / $maxInterested) * 100 : 0; @endphp
+                <div class="relative">
+                    <div class="flex justify-between text-sm font-bold mb-1.5">
+                        <span class="text-gray-700 truncate pr-4" title="{{ $course->interested_course }}">{{ $course->interested_course }}</span>
+                        <span class="text-green-600 tabular-nums">{{ $course->total }}</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                        <div class="bg-gradient-to-r from-green-500 to-green-400 h-2.5 rounded-full transition-all duration-500" style="width: {{ $percentage }}%"></div>
+                    </div>
+                </div>
+            @empty
+                <p class="text-sm text-gray-500 text-center py-4">Nenhum curso extra sugerido.</p>
+            @endforelse
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-black text-gray-800">Situação Escolar</h3>
+            <span class="text-xs font-bold text-purple-700 bg-purple-100 px-3 py-1 rounded-full">Perfil</span>
+        </div>
+        <div class="space-y-5">
+            @forelse($schoolYears as $year)
+                @php $percentage = $maxSchoolYear > 0 ? ($year->total / $maxSchoolYear) * 100 : 0; @endphp
+                <div class="relative">
+                    <div class="flex justify-between text-sm font-bold mb-1.5">
+                        <span class="text-gray-700 truncate pr-4" title="{{ $year->school_year }}">{{ $year->school_year }}</span>
+                        <span class="text-purple-600 tabular-nums">{{ $year->total }}</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-500 to-purple-400 h-2.5 rounded-full transition-all duration-500" style="width: {{ $percentage }}%"></div>
+                    </div>
+                </div>
+            @empty
+                <p class="text-sm text-gray-500 text-center py-4">Nenhum perfil registrado.</p>
+            @endforelse
         </div>
     </div>
 

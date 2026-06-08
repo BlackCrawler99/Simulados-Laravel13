@@ -84,6 +84,17 @@
                 <x-input-error :messages="$errors->get('desired_course')" class="mt-2" />
             </div>
 
+            <!-- Campo de Curso de Interesse -->
+            <div class="mt-4">
+                <label for="interested_course" class="block text-sm font-bold text-gray-700">
+                    Não encontrou seu curso na lista? Digite o curso de interesse:
+                </label>
+                <input id="interested_course" type="text" name="interested_course" value="{{ old('interested_course') }}" 
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" 
+                    placeholder="Ex: Engenharia Aeroespacial">
+                <p class="text-xs text-gray-500 mt-1">Deixe em branco se já selecionou um curso acima.</p>
+            </div>
+
         </div> <!-- Fim do Grid Container -->
 
         <!-- Checkbox de Aceite -->

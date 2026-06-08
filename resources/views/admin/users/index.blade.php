@@ -38,41 +38,53 @@
                         <div class="text-sm text-gray-500">{{ $user->email }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        @if($user->is_admin)
+                        @if($user->is_super_admin)
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-blue rounded-full bg-blue-100 text-blue-600 border border-blue-200">
+                                Desenvolvedor
+                            </span>
+                        @elseif($user->is_admin)
                             <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 border border-purple-200">
                                 Administrador
                             </span>
                         @else
-                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600 border border-gray-200">
-                                Aluno / Candidato
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 border border-gray-200">
+                                Aluno/Candidato
                             </span>
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex items-center justify-end gap-4">
                             
-                            <!-- Botão Editar (Aparece para todos) -->
                             <a href="{{ route('admin.users.edit', $user->id) }}" class="text-blue-600 hover:text-blue-900 font-bold">
                                 Editar
                             </a>
 
-                            <!-- Lógica para proteger o próprio Admin -->
                             @if(auth()->id() !== $user->id)
-                                {{-- Botão Toggle Admin --}}
-                                <form action="{{ route('admin.users.toggle-admin', $user->id) }}" method="POST">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="{{ $user->is_admin ? 'text-orange-600 hover:text-orange-900' : 'text-indigo-600 hover:text-indigo-900' }} font-bold">
-                                        {{ $user->is_admin ? 'Remover Admin' : 'Tornar Admin' }}
-                                    </button>
-                                </form>
+                                
+                                @if(!$user->is_super_admin)
+                                    
+                                    {{-- Botão Toggle Admin --}}
+                                    <form action="{{ route('admin.users.toggle-admin', $user->id) }}" method="POST">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="{{ $user->is_admin ? 'text-orange-600 hover:text-orange-900' : 'text-indigo-600 hover:text-indigo-900' }} font-bold">
+                                            {{ $user->is_admin ? 'Remover Admin' : 'Tornar Admin' }}
+                                        </button>
+                                    </form>
 
-                                {{-- Botão Excluir --}}
-                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('ATENÇÃO: Isso excluirá o usuário e TODOS os seus simulados. Confirmar?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900 font-bold">Excluir</button>
-                                </form>
+                                    {{-- Botão Excluir --}}
+                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('ATENÇÃO: Isso excluirá o usuário e TODOS os seus simulados. Confirmar?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900 font-bold">Excluir</button>
+                                    </form>
+
+                                @else
+                                    <span class="text-gray-400 text-xs uppercase bg-gray-100 px-2 py-1 rounded cursor-not-allowed" title="Contas de Desenvolvedor não podem ser alteradas ou excluídas por aqui.">
+                                        Protegido
+                                    </span>
+                                @endif
+
                             @else
                                 <span class="text-gray-400 text-xs uppercase cursor-not-allowed bg-gray-100 px-2 py-1 rounded" title="Você não pode alterar seu próprio privilégio">
                                     Este é você

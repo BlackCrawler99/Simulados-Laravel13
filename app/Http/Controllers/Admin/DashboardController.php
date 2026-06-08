@@ -81,6 +81,34 @@ class DashboardController extends Controller
         }
 
         arsort($avgAreas);
+        
+        $topCourses = User::select('desired_course', DB::raw('count(*) as total'))
+        ->whereNotNull('desired_course')
+        ->where('desired_course', '!=', '') // Garante que não pega strings vazias
+        ->groupBy('desired_course')
+        ->orderByDesc('total')
+        ->limit(10)
+        ->get();
+
+        // Pega o maior número para calcular a porcentagem da barra visual na View
+        $maxCourseCount = $topCourses->max('total') ?: 0;
+
+        $topInterestedCourses = User::select('interested_course', DB::raw('count(*) as total'))
+        ->whereNotNull('interested_course')
+        ->where('interested_course', '!=', '')
+        ->groupBy('interested_course')
+        ->orderByDesc('total')
+        ->limit(10)
+        ->get();
+        $maxInterested = $topInterestedCourses->max('total') ?: 0;
+
+        $schoolYears = User::select('school_year', DB::raw('count(*) as total'))
+        ->whereNotNull('school_year')
+        ->where('school_year', '!=', '')
+        ->groupBy('school_year')
+        ->orderByDesc('total')
+        ->get();
+        $maxSchoolYear = $schoolYears->max('total') ?: 0;
 
         // CORREÇÃO: Enviando de fato os dados processados para renderizar na View
         return view('admin.dashboard', compact(
@@ -91,7 +119,13 @@ class DashboardController extends Controller
             'chartLabels',
             'chartData',
             'notasDistribution',
-            'avgAreas'
+            'avgAreas',
+            'topCourses',
+            'maxCourseCount',
+            'topInterestedCourses',
+            'maxInterested',
+            'schoolYears',
+            'maxSchoolYear'
         ));
     } // Fecha adequadamente o escopo do método index
 

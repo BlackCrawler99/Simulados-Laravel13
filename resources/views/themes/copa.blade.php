@@ -16,13 +16,15 @@
 
     <!-- Cabeçalho / Navegação com Borda Temática -->
     <header class="bg-white shadow-sm border-b-4 border-yellow-400 relative z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-auto py-4 sm:h-20 flex flex-wrap items-center justify-between gap-4">
+            
             <div class="flex-shrink-0 flex items-center gap-2">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo da Instituição" class="h-12 w-auto">
-                <span class="font-black text-2xl text-gray-800 tracking-tight uppercase">Simulado<span class="text-green-600">ENEM</span></span>
+                <img src="{{ asset('images/logo.png') }}" alt="Logo da Instituição" class="h-10 sm:h-12 w-auto">
+                <span class="font-black text-xl sm:text-2xl text-gray-800 tracking-tight uppercase">Simulado<span class="text-green-600">ENEM</span></span>
             </div>
+
             @if (Route::has('login'))
-                <nav class="flex items-center gap-4">
+                <nav class="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm md:text-base flex-wrap justify-center">
                     @auth
                         @if(auth()->user()->is_admin)
                             <a href="{{ route('admin.questions.index') }}" class="font-bold text-green-700 hover:text-green-900 transition-colors flex items-center gap-2">
@@ -34,9 +36,14 @@
                             </a>
                         @endif
                     @else
-                        <a href="{{ route('login') }}" class="font-bold text-gray-600 hover:text-green-700 transition-colors">Entrar</a>
+                        <a href="{{ route('login') }}" class="font-bold text-gray-600 hover:text-green-700 transition-colors">
+                            Entrar
+                        </a>
+
                         @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="inline-flex items-center justify-center px-6 py-2.5 bg-yellow-400 border border-transparent rounded-lg font-black text-green-900 hover:bg-yellow-300 focus:ring-4 focus:ring-yellow-200 transition-all shadow-sm uppercase text-sm tracking-wide">Fazer Convocação</a>
+                            <a href="{{ route('register') }}" class="inline-flex items-center justify-center px-4 py-2 sm:px-6 sm:py-2.5 bg-yellow-400 border border-transparent rounded-lg font-black text-green-900 hover:bg-yellow-300 focus:ring-4 focus:ring-yellow-200 transition-all shadow-sm uppercase text-xs sm:text-sm tracking-wide">
+                                Fazer Convocação
+                            </a>
                         @endif
                     @endauth
                 </nav>
@@ -70,26 +77,45 @@
             </div>
         </div>
 
-        <!-- Seção de Prêmios (Realocada para destaque) -->
-        <div id="premios" class="py-20 bg-green-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center bg-white p-12 rounded-[3rem] border-4 border-dashed border-yellow-400 shadow-xl">
-                    <div class="inline-block bg-yellow-400 text-green-900 px-6 py-2 rounded-full font-black uppercase tracking-widest text-sm mb-4 animate-bounce">Super Coleção de Prêmios</div>
-                    <h3 class="text-4xl font-black text-green-900 uppercase mb-4">Garanta sua Figurinha Exclusiva</h3>
-                    <p class="text-gray-600 mb-12 text-lg font-medium max-w-xl mx-auto">Quanto maior sua nota, mais rara será sua figurinha. Complete sua coleção e mostre que você é um craque!</p>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        @foreach(['1 Figurinha' => '🥉', '2 Figurinhas' => '🥈', '3 Figurinhas' => '🥇', 'Pacote Especial' => '💎'] as $premio => $emoji)
-                            <div class="p-6 rounded-3xl border-2 border-green-100 hover:border-yellow-400 transition-all bg-green-50 hover:shadow-lg">
-                                <div class="text-5xl mb-4">{{ $emoji }}</div>
-                                <h4 class="font-black text-green-900 uppercase">{{ $premio }}</h4>
-                                <p class="text-xs text-gray-500 mt-2">Prêmio garantido pela sua nota.</p>
-                            </div>
-                        @endforeach
+        <!-- Seção de Prêmios (Destaque Condicional) -->
+        @if($isPromoActive)
+            <div id="premios" class="py-20 bg-green-50">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center bg-white p-12 rounded-[3rem] border-4 border-dashed border-yellow-400 shadow-xl">
+                        <div class="inline-block bg-yellow-400 text-green-900 px-6 py-2 rounded-full font-black uppercase tracking-widest text-sm mb-4 animate-bounce">
+                            Super Coleção de Prêmios
+                        </div>
+                        <h3 class="text-4xl font-black text-green-900 uppercase mb-4">Garanta sua Figurinha Exclusiva</h3>
+                        <p class="text-gray-600 mb-12 text-lg font-medium max-w-xl mx-auto">
+                            Quanto maior sua nota, mais figurinhas você ganha. Complete sua coleção e mostre que você é um craque!
+                        </p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            @php
+                                // Mapeia os ícones conforme o índice da faixa
+                                $icons = [1 => '🥉', 2 => '🥈', 3 => '🥇', 4 => '⭐', 5 => '🔥', 6 => '💎'];
+                            @endphp
+
+                            @for ($i = 1; $i <= 6; $i++)
+                                @php $reward = \App\Models\Setting::where('key', 'reward_tier_' . $i)->value('value'); @endphp
+                                <div class="group p-8 rounded-3xl border-2 border-green-100 hover:border-yellow-400 transition-all bg-green-50 hover:bg-white hover:shadow-2xl hover:-translate-y-2">
+                                    <div class="text-6xl mb-6 transform group-hover:scale-110 transition-transform">{{ $icons[$i] ?? '🏆' }}</div>
+                                    <h4 class="font-black text-green-900 uppercase text-lg mb-2">Faixa {{ $i }}</h4>
+                                    <div class="text-xl font-black text-green-700">{{ $reward }}</div>
+                                    <div class="mt-4 h-1 w-12 bg-yellow-400 mx-auto rounded-full"></div>
+                                </div>
+                            @endfor
+                        </div>
+                        
+                        <div class="mt-12">
+                            <a href="{{ route('register') }}" class="px-10 py-4 bg-green-700 text-white font-black uppercase tracking-wider rounded-full shadow-lg hover:bg-green-800 transition-all hover:scale-105">
+                                Quero começar minha coleção agora!
+                            </a>
+                        </div>
                     </div>
-                    <div class="mt-12"><a href="{{ route('register') }}" class="px-10 py-4 bg-green-700 text-white font-black uppercase rounded-full shadow-lg hover:bg-green-800 transition-all hover:scale-105">Começar Coleção</a></div>
                 </div>
             </div>
-        </div>
+        @endif
 
         <!-- Seção de Benefícios (Táticas) -->
         <div id="taticas" class="bg-white py-20">
@@ -104,11 +130,13 @@
         </div>
     </main>
 
-    <!-- Botão Flutuante -->
-    <a href="#premios" class="fixed bottom-8 right-8 z-50 flex items-center gap-3 bg-green-700 text-white px-6 py-4 rounded-full shadow-2xl hover:scale-105 transition-transform animate-bounce border-2 border-yellow-400">
-        <span class="font-black uppercase text-sm">Ver Prêmios</span>
-        <span class="text-2xl">🏆</span>
-    </a>
+        <!-- Botão Flutuante (Condicional) -->
+        @if($isPromoActive)
+            <a href="#premios" class="fixed bottom-8 right-8 z-50 flex items-center gap-3 bg-green-700 text-white px-6 py-4 rounded-full shadow-2xl hover:scale-105 transition-transform animate-bounce border-2 border-yellow-400">
+                <span class="font-black uppercase text-sm">Ver Prêmios</span>
+                <span class="text-2xl">🏆</span>
+            </a>
+        @endif
 
     <footer class="bg-green-900 py-8 text-center text-green-300 font-bold text-sm">&copy; {{ date('Y') }} Uniensino. O Hexa vem aí! 🏆</footer>
 

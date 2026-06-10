@@ -31,8 +31,10 @@ class ModuleEnabled
 
         // 3. Se achou um módulo, checa no banco
         if ($moduleKey) {
-            $isActive = Setting::where('key', $moduleKey)->value('value') == '1';
-            if (!$isActive) {
+            $value = Setting::where('key', $moduleKey)->value('value');
+            
+            // ALTERAÇÃO AQUI: Aceita tanto '1' quanto 'true'
+            if (!in_array($value, ['1', 'true'])) {
                 abort(403, 'Acesso negado: Este recurso está desativado.');
             }
         }

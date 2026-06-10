@@ -21,6 +21,8 @@ use Illuminate\Notifications\Notifiable;
         'school_year',
         'accepts_info',
         'interested_course',
+        'school_id',
+        'school_class_id',
     ])]
 #[Hidden([
         'password',
@@ -46,5 +48,17 @@ class User extends Authenticatable
     
     public function exams() {
         return $this->hasMany(Exam::class);
+    }
+
+    // O aluno pertence a uma escola (Premium)
+    public function school()
+    {
+        return $this->belongsTo(School::class);
+    }
+
+    // O aluno pertence a uma turma (Premium)
+    public function schoolClass()
+    {
+        return $this->belongsTo(SchoolClass::class);
     }
 }

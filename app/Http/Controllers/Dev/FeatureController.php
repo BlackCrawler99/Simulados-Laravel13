@@ -18,7 +18,7 @@ class FeatureController extends Controller
             'module_vocational'     => Setting::where('key', 'module_vocational')->value('value') === 'true',
             'module_school_reports' => Setting::where('key', 'module_school_reports')->value('value') === 'true',
             // No futuro, se criar o módulo de redação, é só adicionar a linha aqui:
-            // 'module_essay'       => Setting::where('key', 'module_essay')->value('value') === 'true',
+             'module_colegios'       => Setting::where('key', 'module_colegios')->value('value') === 'true',
         ];
 
         return view('dev.features.index', compact('features'));
@@ -33,7 +33,7 @@ class FeatureController extends Controller
         $availableModules = [
             'module_vocational',
             'module_school_reports',
-            // 'module_essay',
+            'module_colegios',
         ];
 
         foreach ($availableModules as $module) {

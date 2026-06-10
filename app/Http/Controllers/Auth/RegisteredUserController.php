@@ -55,6 +55,15 @@ class RegisteredUserController extends Controller
             // 3. Str::title() capitaliza a primeira letra de cada palavra
             $cursoPadronizado = Str::title(Str::lower(trim($request->interested_course)));
         }
+        // Validação Dinâmica do Módulo Premium
+        $isModuleActive = \App\Models\Setting::where('key', 'module_colegios')->value('value') == '1';
+
+        if ($isModuleActive) {
+            $rules['school_id'] = ['required', 'exists:schools,id'];
+            $rules['school_class_id'] = ['required', 'exists:school_classes,id'];
+        }
+
+        $request->validate($rules);
 
         $user = User::create([
             'name' => $request->name,

@@ -2,7 +2,18 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CandidateController;
+use App\Http\Controllers\Admin\PremiumSchoolController;
+use App\Models\School;
 use Illuminate\Support\Facades\Route;
+
+
+// =========================================================
+// ROTA RETORNO DE TURMAS VIA AJAX (Usada no Formulário de Registro para popular o dropdown de turmas com base na escola selecionada)
+// =========================================================
+Route::get('/api/escolas/{school}/turmas', function (School $school) {
+    // Retorna apenas as turmas pertencentes a essa escola em formato JSON
+    return response()->json($school->classes()->select('id', 'name')->orderBy('name', 'asc')->get());
+});
 
 Route::get('/', function () {
     // Tenta buscar o tema no banco. Se falhar (banco vazio ou sem a tabela), usa o 'default'
@@ -32,12 +43,10 @@ Route::get('/dashboard', function () {
     return view('dashboard', compact('exams'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// --- ROTAS DO ALUNO LOGADO ---
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    // Comentando a rota abaixo para impedir exclusão da conta pelo próprio usuário,
-        //  o que pode causar perda de leads e fraudes. 
-        // Se necessário, a exclusão deve ser feita manualmente pelo admin.
     // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Rotas do Simulado
@@ -47,7 +56,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/simulado/{exam}/pdf', [App\Http\Controllers\ExamController::class, 'downloadPdf'])->name('exams.pdf');
     Route::get('/simulado/{exam}/resultado', [App\Http\Controllers\ExamController::class, 'result'])->name('exams.result');
 });
-################# ADMIN #################
+
+// --- ROTAS DO ADMIN ---
 Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
     
     // --- ÁREA EXCLUSIVA DO DESENVOLVEDOR ---
@@ -70,8 +80,6 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
     Route::post('/questoes', [App\Http\Controllers\Admin\QuestionController::class, 'store'])->name('admin.questions.store');
     Route::post('/questoes/importar', [App\Http\Controllers\Admin\QuestionController::class, 'import'])->name('admin.questions.import');
     Route::get('/questoes/modelo', [App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplate'])->name('admin.questions.template');
-    
-    // Novas rotas para Editar, Atualizar e Excluir:
     Route::get('/questoes/{question}/editar', [App\Http\Controllers\Admin\QuestionController::class, 'edit'])->name('admin.questions.edit');
     Route::put('/questoes/{question}', [App\Http\Controllers\Admin\QuestionController::class, 'update'])->name('admin.questions.update');
     Route::delete('/questoes/{question}', [App\Http\Controllers\Admin\QuestionController::class, 'destroy'])->name('admin.questions.destroy');
@@ -82,12 +90,7 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
     Route::put('/cursos/{course}', [App\Http\Controllers\Admin\CourseController::class, 'update'])->name('admin.courses.update');
     Route::delete('/cursos/{course}', [App\Http\Controllers\Admin\CourseController::class, 'destroy'])->name('admin.courses.destroy');
 
-    // Gestão de Usuários/Administradores
-    Route::get('/usuarios', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
-    Route::patch('/usuarios/{user}/toggle-admin', [App\Http\Controllers\Admin\UserController::class, 'toggleAdmin'])->name('admin.users.toggle-admin');
-    Route::delete('/usuarios/{user}', [App\Http\Controllers\Admin\UserController::class, 'destroy'])->name('admin.users.destroy');
-
-    // Gestão de Usuários/Administradores
+    // Gestão de Usuários/Administradores (Duplicados removidos)
     Route::get('/usuarios', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
     Route::get('/usuarios/{user}/editar', [App\Http\Controllers\Admin\UserController::class, 'edit'])->name('admin.users.edit');
     Route::put('/usuarios/{user}', [App\Http\Controllers\Admin\UserController::class, 'update'])->name('admin.users.update');
@@ -98,14 +101,29 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
     Route::get('/configuracoes', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
     Route::post('/configuracoes/tema', [App\Http\Controllers\Admin\SettingController::class, 'updateTheme'])->name('admin.settings.update-theme');
     Route::post('/configuracoes/regras', [App\Http\Controllers\Admin\SettingController::class, 'updateRules'])->name('admin.settings.update-rules');
-});
 
-Route::middleware(['auth', 'admin', 'module.enabled'])->group(function () {
-    // Todas as rotas que começarem com 'admin.colegios' serão verificadas automaticamente
-    Route::get('/admin/colegios', [SchoolController::class, 'index'])->name('admin.colegios.index');
-    
-    // Todas as rotas que começarem com 'admin.vocational' serão verificadas automaticamente
-    Route::get('/admin/vocacional', [VocationalController::class, 'index'])->name('admin.vocational.index');
+
+    // =========================================================
+    // MÓDULOS PREMIUM (Protegidos pelo Middleware Inteligente)
+    // =========================================================
+    Route::middleware(['module.enabled'])->group(function () {
+        
+        // --- MÓDULO COLÉGIOS ---
+        // Aqui usamos o prefix('colegios') para que as URLs fiquem /admin/colegios/...
+        Route::prefix('colegios')->name('admin.colegios.')->group(function () {
+            // URL: /admin/colegios
+            Route::get('/', [PremiumSchoolController::class, 'index'])->name('index');
+            Route::get('/{school}/turmas', [PremiumSchoolController::class, 'classes'])->name('classes');            
+            Route::get('/{school}/turmas/{schoolClass}/relatorio', [PremiumSchoolController::class, 'report'])->name('report');
+        });
+
+        // --- MÓDULO VOCACIONAL (Exemplo de Futuro) ---
+        // Route::prefix('vocacional')->name('admin.vocational.')->group(function () {
+        //     Route::get('/', [VocationalController::class, 'index'])->name('index');
+        // });
+
+    });
+
 });
 
 require __DIR__.'/auth.php';

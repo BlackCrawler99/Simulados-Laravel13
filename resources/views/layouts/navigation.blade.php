@@ -15,7 +15,20 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if(in_array(\App\Models\Setting::where('key', 'module_vocational')->value('value'), ['1', 'true']))
+                        <div class="pt-4 pb-1 border-t border-gray-200">
+                            <a href="{{ route('vocational.start') }}" 
+                            class="flex items-center px-4 py-2 text-sm font-medium text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors {{ request()->routeIs('vocational.*') ? 'text-emerald-600 bg-emerald-50' : '' }}">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                </svg>
+                                Teste Vocacional
+                            </a>
+                        </div>
+                    @endif
                 </div>
+
             </div>
 
             <!-- Settings Dropdown -->
@@ -70,6 +83,11 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            @if(in_array(\App\Models\Setting::where('key', 'module_vocational')->value('value'), ['1', 'true']))
+                <x-responsive-nav-link :href="route('vocational.start')" :active="request()->routeIs('vocational.*')">
+                    {{ __('Teste Vocacional') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

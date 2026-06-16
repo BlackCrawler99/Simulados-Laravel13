@@ -73,6 +73,15 @@
                     Configurações
                 </a>
 
+                @if(in_array(\App\Models\Setting::where('key', 'module_vocational')->value('value'), ['1', 'true']))
+                    <a href="{{ route('admin.vocational.index') }}" class="flex items-center px-4 py-2 mt-2 text-gray-600 rounded-lg hover:bg-gray-100 hover:text-gray-700 transition-colors">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8l2.586-2.586a2 2 0 00-2.828-2.828L13.172 5.172M8 16l-2.586 2.586a2 2 0 002.828 2.828L10.828 18.828M15 15l-3-3m-6 3a9 9 0 1118 0 9 9 0 01-18 0z" />
+                        </svg>
+                        Teste Vocacional
+                    </a>
+                @endif
+
                 {{-- O BOTÃO SECRETO DO DESENVOLVEDOR --}}
                 @if(auth()->user()->is_super_admin)
                     <div class="mt-8"> <p class="px-4 text-xs font-black text-gray-400 uppercase tracking-wider">

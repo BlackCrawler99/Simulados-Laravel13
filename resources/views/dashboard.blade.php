@@ -7,7 +7,31 @@
 
     <div class="py-12 bg-gray-100 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
+            @if(
+                in_array(\App\Models\Setting::where('key', 'module_vocational')->value('value'), ['1', 'true']) && 
+                $exams->whereNotNull('completed_at')->count() > 0 && 
+                !auth()->user()->vocationalResult()->exists()
+            )
+                <div class="mb-8 relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl shadow-lg border border-emerald-400 text-white p-6 md:p-8 flex flex-col md:flex-row items-center justify-between group">
+                    <div class="absolute -right-10 -top-10 bg-white opacity-10 w-48 h-48 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                    
+                    <div class="relative z-10 flex items-start gap-6">
+                        <div class="hidden md:flex p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-black mb-1">Parabéns pelo seu esforço no Simulado! 🎉</h3>
+                            <p class="text-emerald-50 text-sm md:text-base font-medium max-w-xl">Agora que testamos seus conhecimentos, que tal descobrirmos qual área profissional mais combina com o seu perfil? Leva só 3 minutinhos.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="relative z-10 mt-6 md:mt-0 w-full md:w-auto">
+                        <a href="{{ route('vocational.start') }}" class="block w-full md:w-auto text-center bg-white text-emerald-600 px-6 py-3.5 rounded-xl font-black text-sm hover:bg-emerald-50 hover:scale-105 transition-all shadow-md">
+                            Descobrir minha Área
+                        </a>
+                    </div>
+                </div>
+            @endif
             {{-- Alerta de Sucesso após finalizar o simulado --}}
             @if(session('status'))
                 <div class="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-r-lg shadow-sm" role="alert">
@@ -15,7 +39,7 @@
                     <p>{{ session('status') }}</p>
                 </div>
             @endif
-
+        
             {{-- Área de Ação Principal --}}
             @if($exams->whereNotNull('completed_at')->isEmpty())
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
@@ -50,8 +74,10 @@
                     $maxDiscount = \App\Models\Setting::where('key', 'max_scholarship')->value('value') ?? 50;
 
                     // 2. Calcula a porcentagem real de acertos (Score / Total de Questões * 100)
-                    $totalQuestions = $bestExam->total_questions > 0 ? $bestExam->total_questions : 1;
-                    $score100 = round(($bestExam->score / $totalQuestions) * 100);
+                    $correctCount = $bestExam->answers->where('is_correct', true)->count();
+                    $totalQuestions = $bestExam->answers->count() > 0 ? $bestExam->answers->count() : 1;
+
+                    $score100 = round(($correctCount / $totalQuestions) * 100);
                     
                     // Puxa os prêmios do banco de dados (com defaults de segurança)
                     $gift1 = \App\Models\Setting::where('key', 'reward_tier_1')->value('value') ?? '1 Figurinha';

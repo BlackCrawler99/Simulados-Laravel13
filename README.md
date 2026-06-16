@@ -1,58 +1,185 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Simulado ENEM
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Autor
 
-## About Laravel
+Vinicius Querino
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Visão Geral
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Simulado ENEM é um sistema Laravel para gestão de simulados educacionais, captação de leads e análise de desempenho. Ele permite que alunos se cadastrem, recebam simulados com questões por área de conhecimento, finalizem provas, consultem resultados e baixem relatórios em PDF. Administradores podem cadastrar questões, gerenciar cursos, monitorar candidatos, exportar leads e configurar regras do sistema.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Funcionalidades Principais
 
-## Learning Laravel
+- Registro de usuários com dados pessoais, curso desejado e informações de contato.
+- Login, verificação de e-mail e gerenciamento de perfil.
+- Simulado com seleção automática de questões por área e correção automática.
+- Visualização de simulado em andamento e histórico de resultados.
+- Geração de PDF de resultado de simulado.
+- Painel administrativo para gestão de perguntas, cursos, usuários e configurações.
+- Exportação de leads/candidatos para Excel usando `maatwebsite/excel`.
+- Importação de questões via modelo de Excel e geração de template de importação.
+- Configurações dinâmicas de tema, regras do simulado, WhatsApp e prêmios.
+- Módulo premium de escolas e turmas com relatórios de desempenho por turma.
+- Middleware de segurança para admin, super admin e módulos habilitados.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Tecnologias
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.3+
+- Laravel Framework ^13.7
+- MySQL / SQLite / PostgreSQL (qualquer banco suportado pelo Laravel)
+- Tailwind CSS
+- Vite
+- Alpine.js
+- Axios
+- Laravel Breeze (autenticação)
+- barryvdh/laravel-dompdf
+- maatwebsite/excel
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Estrutura do Sistema
 
-## Agentic Development
+### Principais Modelos
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- `User`
+  - Relacionamentos: `exams`, `school`, `schoolClass`
+  - Campos: `name`, `email`, `password`, `phone`, `city`, `uf`, `desired_course`, `school_year`, `interested_course`, `school_id`, `school_class_id`
+- `Exam`
+  - Relacionamentos: `user`, `answers`
+  - Campos: `total_questions`, `score`, `completed_at`
+- `Question`
+  - Relacionamentos: `options`
+  - Campos: `statement`, `image`, `area`
+- `Option`
+  - Relacionamento: `question`
+  - Campos: `text`, `is_correct`
+- `Setting`
+  - Campos: `key`, `value`
+
+### Principais Rotas
+
+- `/` — Página inicial com tema configurável.
+- `/dashboard` — Painel do usuário logado.
+- `/simulado/iniciar` — Inicia simulados para alunos.
+- `/simulado/{exam}` — Exibe simulado em andamento.
+- `/simulado/{exam}/finalizar` — Envia respostas e finaliza o simulado.
+- `/simulado/{exam}/pdf` — Baixa resultado em PDF.
+- `/simulado/{exam}/resultado` — Visualiza resultado da prova.
+- `/api/escolas/{school}/turmas` — API para carregar turmas na inscrição.
+- `/admin` — Dashboard administrativo.
+- `/admin/candidatos` — Lista de leads e candidatos.
+- `/admin/dashboard/exportar-leads` — Exporta relatórios em Excel.
+- `/admin/questoes` — CRUD de questões.
+- `/admin/questoes/importar` — Importa questões via Excel.
+- `/admin/questoes/modelo` — Download do modelo de importação.
+- `/admin/cursos` — Gestão de cursos.
+- `/admin/usuarios` — Gestão de usuários e permissões admin.
+- `/admin/configuracoes` — Configurações do sistema.
+- `/admin/modulos` — Módulo de desenvolvimento disponível para `super_admin`.
+- `/admin/colegios` — Módulo premium de escolas e turmas.
+
+## Como Executar Localmente
+
+1. Copie o arquivo de ambiente:
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+cp .env.example .env
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+2. Instale dependências PHP:
 
-## Contributing
+```bash
+composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. Gere a chave da aplicação:
 
-## Code of Conduct
+```bash
+php artisan key:generate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4. Configure o banco de dados em `.env`.
 
-## Security Vulnerabilities
+5. Execute as migrations:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan migrate
+```
 
-## License
+6. Instale dependências Node:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+npm install
+```
+
+7. Compile os assets:
+
+```bash
+npm run build
+```
+
+8. Inicie o servidor de desenvolvimento:
+
+```bash
+npm run dev
+```
+
+## Comandos Úteis
+
+- `composer install` — instala dependências PHP.
+- `npm install` — instala dependências JS.
+- `npm run dev` — executa Vite em modo desenvolvimento.
+- `npm run build` — compila os ativos para produção.
+- `php artisan migrate` — executa migrations.
+- `php artisan test` — roda testes automatizados.
+- `php artisan tinker` — abre REPL do Laravel.
+
+## Módulos e Configurações
+
+- `is_admin` — identifica administradores.
+- `super_admin` — acesso especial ao módulo de desenvolvimento.
+- `module.enabled` — controla o acesso aos módulos premium de escolas.
+- `Setting::updateOrCreate` — configura temas, número de questões do simulado, WhatsApp e prêmios.
+
+## Importação e Exportação
+
+- Exporta leads para Excel com `App\\Exports\\LeadsExport`.
+- Exporta modelo de importação de questões com `App\\Exports\\QuestionTemplateExport`.
+- Importa questões via Excel em `App\\Imports\\QuestionImport`.
+
+## Observações
+
+- O sistema atual limita cada aluno a uma tentativa de simulado.
+- A seleção de questões é baseada na configuração de número de perguntas e tentativas de balanceamento por área de conhecimento.
+- O tema da home page é configurável no painel administrativo e carregado dinamicamente.
+
+## Estrutura do Banco de Dados
+
+- `users`: armazena cadastro de candidatos e administradores. Campos principais: `id`, `name`, `email`, `password`, `phone`, `city`, `uf`, `desired_course`, `school_year`, `interested_course`, `school_id`, `school_class_id`, `is_admin`.
+- `exams`: registra simulados aplicados. Campos principais: `id`, `user_id`, `total_questions`, `score`, `completed_at`, `created_at`.
+- `questions`: banco de questões. Campos principais: `id`, `area`, `statement`, `image`, `created_at`.
+- `options`: alternativas das questões. Campos principais: `id`, `question_id`, `text`, `is_correct`.
+- `answers`: respostas dos alunos vinculadas ao `exam` e à `question` (contém `option_id` e `is_correct`).
+- `courses`: cursos disponíveis para seleção no registro.
+- `schools` e `school_classes`: tabelas do módulo premium para gestão de colégios e turmas.
+- `settings`: pares `key`/`value` usados para configurar tema, número de questões, regras de promoção e integrações (WhatsApp, prêmios etc.).
+
+Esta estrutura serve como referência; nomes de colunas e tabelas podem ser adaptados conforme migrações personalizadas.
+
+## Fluxo de Usuário
+
+1. Usuário acessa a página inicial e se registra (opcionalmente selecionando escola/turma quando o módulo premium está ativo).
+2. Após verificação de e-mail e login, usuário acessa o `dashboard` com seus simulados.
+3. Usuário inicia o simulado (`/simulado/iniciar`). O sistema monta uma prova balanceada por área com o número de questões configurado.
+4. O aluno responde as questões e envia o formulário para `/simulado/{exam}/finalizar`.
+5. O backend corrige automaticamente, atualiza `exams.score` e `completed_at`, e redireciona ao `dashboard` com a nota.
+6. O aluno pode visualizar detalhes em `/simulado/{exam}/resultado` e baixar o PDF em `/simulado/{exam}/pdf` (apenas se o simulado estiver finalizado).
+
+Fluxo administrativo:
+
+- Administrador acessa `/admin` para visualizar métricas, exportar leads e gerenciar recursos.
+- CRUD de questões em `/admin/questoes` e importação via `/admin/questoes/importar` usando o template disponível em `/admin/questoes/modelo`.
+- Exportação de leads em Excel via `/admin/dashboard/exportar-leads`.
+- Gestão de temas e regras em `/admin/configuracoes` (número de questões, mensagens de WhatsApp, prêmios, etc.).
+
+---
+
+Made with Laravel by Vinicius Querino.

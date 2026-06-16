@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\PremiumSchoolController;
 use App\Models\School;
 use Illuminate\Support\Facades\Route;
 
-
 // =========================================================
 // ROTA RETORNO DE TURMAS VIA AJAX (Usada no Formulário de Registro para popular o dropdown de turmas com base na escola selecionada)
 // =========================================================
@@ -55,6 +54,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/simulado/{exam}', [App\Http\Controllers\ExamController::class, 'show'])->name('exams.show');
     Route::get('/simulado/{exam}/pdf', [App\Http\Controllers\ExamController::class, 'downloadPdf'])->name('exams.pdf');
     Route::get('/simulado/{exam}/resultado', [App\Http\Controllers\ExamController::class, 'result'])->name('exams.result');
+
+    // =========================================================
+    // MÓDULOS PREMIUM DO ALUNO (Protegidos pelo Middleware)
+    // =========================================================
+    Route::middleware(['module.enabled'])->group(function () {
+        
+        // --- TESTE VOCACIONAL ---
+        Route::prefix('vocacional')->name('vocational.')->group(function () {
+            Route::get('/', [App\Http\Controllers\StudentVocationalController::class, 'start'])->name('start');
+            Route::post('/', [App\Http\Controllers\StudentVocationalController::class, 'submit'])->name('submit');
+            Route::get('/resultado', [App\Http\Controllers\StudentVocationalController::class, 'result'])->name('result');
+        });
+
+    });
 });
 
 // --- ROTAS DO ADMIN ---
@@ -90,7 +103,7 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
     Route::put('/cursos/{course}', [App\Http\Controllers\Admin\CourseController::class, 'update'])->name('admin.courses.update');
     Route::delete('/cursos/{course}', [App\Http\Controllers\Admin\CourseController::class, 'destroy'])->name('admin.courses.destroy');
 
-    // Gestão de Usuários/Administradores (Duplicados removidos)
+    // Gestão de Usuários/Administradores
     Route::get('/usuarios', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
     Route::get('/usuarios/{user}/editar', [App\Http\Controllers\Admin\UserController::class, 'edit'])->name('admin.users.edit');
     Route::put('/usuarios/{user}', [App\Http\Controllers\Admin\UserController::class, 'update'])->name('admin.users.update');
@@ -109,18 +122,28 @@ Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
     Route::middleware(['module.enabled'])->group(function () {
         
         // --- MÓDULO COLÉGIOS ---
-        // Aqui usamos o prefix('colegios') para que as URLs fiquem /admin/colegios/...
         Route::prefix('colegios')->name('admin.colegios.')->group(function () {
-            // URL: /admin/colegios
             Route::get('/', [PremiumSchoolController::class, 'index'])->name('index');
             Route::get('/{school}/turmas', [PremiumSchoolController::class, 'classes'])->name('classes');            
             Route::get('/{school}/turmas/{schoolClass}/relatorio', [PremiumSchoolController::class, 'report'])->name('report');
         });
 
-        // --- MÓDULO VOCACIONAL (Exemplo de Futuro) ---
-        // Route::prefix('vocacional')->name('admin.vocational.')->group(function () {
-        //     Route::get('/', [VocationalController::class, 'index'])->name('index');
-        // });
+        // --- MÓDULO VOCACIONAL ---
+        Route::prefix('vocacional')->name('admin.vocational.')->group(function () {
+            // Dashboard Inicial (Cards)
+            Route::get('/', [App\Http\Controllers\Admin\VocationalController::class, 'index'])->name('index');
+            
+            // Gestão de Questões
+            Route::get('/questoes', [App\Http\Controllers\Admin\VocationalController::class, 'questions'])->name('questions');
+            Route::get('/questoes/modelo', [App\Http\Controllers\Admin\VocationalController::class, 'downloadTemplate'])->name('template');
+            Route::post('/questoes/importar', [App\Http\Controllers\Admin\VocationalController::class, 'import'])->name('import');
+            Route::get('/questoes/criar', [App\Http\Controllers\Admin\VocationalController::class, 'create'])->name('create');
+            Route::post('/questoes', [App\Http\Controllers\Admin\VocationalController::class, 'store'])->name('store');
+            
+            // Gestão de Alunos (Resultados)
+            Route::get('/alunos', [App\Http\Controllers\Admin\VocationalController::class, 'students'])->name('students');
+            Route::get('/alunos/{result}/relatorio', [App\Http\Controllers\Admin\VocationalController::class, 'report'])->name('report');
+        });
 
     });
 

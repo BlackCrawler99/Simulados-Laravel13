@@ -35,7 +35,8 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        // 1. Defina as regras base que são obrigatórias para todos
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
@@ -45,17 +46,9 @@ class RegisteredUserController extends Controller
             'desired_course' => ['required', 'string', 'max:100'],
             'school_year' => ['required', 'string', 'max:50'],
             'interested_course' => ['nullable', 'string', 'max:255'],
-        ]);
-    
-        // Padronização do campo
-        $cursoPadronizado = null;
-        if ($request->filled('interested_course')) {
-            // 1. trim() tira espaços no começo e fim
-            // 2. Str::lower() deixa tudo minúsculo para evitar "eNgEnHaRiA"
-            // 3. Str::title() capitaliza a primeira letra de cada palavra
-            $cursoPadronizado = Str::title(Str::lower(trim($request->interested_course)));
-        }
-        // Validação Dinâmica do Módulo Premium
+        ];
+
+        // 2. Adicione as regras dinâmicas do módulo premium, se ativo
         $isModuleActive = \App\Models\Setting::where('key', 'module_colegios')->value('value') == '1';
 
         if ($isModuleActive) {
@@ -63,8 +56,16 @@ class RegisteredUserController extends Controller
             $rules['school_class_id'] = ['required', 'exists:school_classes,id'];
         }
 
+        // 3. Valide tudo de uma só vez
         $request->validate($rules);
 
+        // 4. Padronização do campo (agora com os dados validados)
+        $cursoPadronizado = null;
+        if ($request->filled('interested_course')) {
+            $cursoPadronizado = Str::title(Str::lower(trim($request->interested_course)));
+        }
+
+        // 5. Criação do usuário
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -76,6 +77,9 @@ class RegisteredUserController extends Controller
             'school_year' => $request->school_year,
             'accepts_info' => $request->has('accepts_info'),
             'interested_course' => $cursoPadronizado,
+            // Adicione os campos do módulo premium aqui
+            'school_id' => $isModuleActive ? $request->school_id : null,
+            'school_class_id' => $isModuleActive ? $request->school_class_id : null,
         ]);
 
         event(new Registered($user));

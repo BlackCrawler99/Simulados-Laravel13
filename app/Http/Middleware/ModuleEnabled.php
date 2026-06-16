@@ -15,6 +15,7 @@ class ModuleEnabled
         $routeMap = [
             'admin.colegios'   => 'module_colegios',
             'admin.vocational' => 'module_vocational',
+            'vocational'       => 'module_vocational',
             'admin.reports'    => 'module_school_reports',
         ];
 

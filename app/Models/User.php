@@ -61,4 +61,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(SchoolClass::class);
     }
+    
+    // O aluno tem um resultado vocacional
+    public function vocationalResult()
+    {
+        return $this->hasOne(VocationalResult::class);
+    }
 }
